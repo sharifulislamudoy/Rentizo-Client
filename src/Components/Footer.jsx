@@ -1,20 +1,8 @@
-import { FaFacebookF, FaTwitter, FaInstagram, FaGithub, FaCar, FaArrowUp } from 'react-icons/fa';
+import { FaFacebookF, FaTwitter, FaInstagram, FaGithub, FaCar, FaArrowUp, FaLongArrowAltUp } from 'react-icons/fa';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 const Footer = () => {
-    const [showTopBtn, setShowTopBtn] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowTopBtn(window.scrollY > 300);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -33,12 +21,18 @@ const Footer = () => {
     };
 
     return (
-        <footer className="relative bg-base-200 text-base-content">
+        <motion.footer
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-[#1E293B] text-white relative"
+        >
             <motion.div
                 className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-3 gap-10"
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true }}
+                viewport={{ once: false }}
             >
                 {/* Brand */}
                 <motion.div custom={0} variants={fadeUp}>
@@ -46,7 +40,7 @@ const Footer = () => {
                         <FaCar className="text-3xl" />
                         Rentizo
                     </Link>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-300">
                         Rentizo is your trusted platform to rent, list, and book cars with ease. Experience seamless and reliable car rentals at your fingertips.
                     </p>
                 </motion.div>
@@ -67,7 +61,7 @@ const Footer = () => {
                 {/* Contact & Social */}
                 <motion.div custom={2} variants={fadeUp}>
                     <h3 className="text-lg font-semibold mb-3">Connect With Us</h3>
-                    <p className="text-sm text-gray-500 mb-4">Stay in touch through our social platforms.</p>
+                    <p className="text-sm text-gray-300 mb-4">Stay in touch through our social platforms.</p>
                     <div className="flex gap-4">
                         <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-primary"><FaFacebookF size={20} /></a>
                         <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-primary"><FaTwitter size={20} /></a>
@@ -83,16 +77,17 @@ const Footer = () => {
             </div>
 
             {/* Scroll to Top Button */}
-            {showTopBtn && (
-                <button
-                    onClick={scrollToTop}
-                    className="fixed bottom-5 right-5 p-3 rounded-full bg-primary text-white shadow-lg hover:bg-primary-focus transition-all"
-                    aria-label="Scroll to top"
-                >
-                    <FaArrowUp size={16} />
-                </button>
-            )}
-        </footer>
+            {/* Scroll to Top Button */}
+            <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={scrollToTop}
+                className="fixed bottom-6 right-6 btn btn-circle btn-primary shadow-lg"
+                aria-label="Scroll to top"
+            >
+                <FaLongArrowAltUp />
+            </motion.button>
+        </motion.footer>
     );
 };
 

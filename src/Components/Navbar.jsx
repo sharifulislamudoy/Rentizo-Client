@@ -38,7 +38,7 @@ const Navbar = () => {
         ];
 
     return (
-        <div className="bg-transparent backdrop-blur-md shadow-md sticky top-0 z-50">
+        <div className="backdrop-blur-lg shadow-md sticky top-0 z-50">
             <div className="navbar max-w-7xl mx-auto px-4">
                 {/* Mobile Menu Button */}
                 <div className="lg:hidden mr-3">
