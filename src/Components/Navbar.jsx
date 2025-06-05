@@ -4,7 +4,6 @@ import { FaCar, FaSignOutAlt } from 'react-icons/fa';
 import { useState } from 'react';
 import ThemeToggle from '../Utils/ThemeToggle';
 
-// Framer Motion variant for list container (optional)
 const listVariants = {
     initial: {},
     animate: {
@@ -21,7 +20,7 @@ const itemVariants = {
 };
 
 const Navbar = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(true); // Replace with real auth
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navItems = isLoggedIn
@@ -39,12 +38,20 @@ const Navbar = () => {
         ];
 
     return (
-        <div className="bg-base-100 shadow-md sticky top-0 z-50">
+        <div className="bg-transparent backdrop-blur-md shadow-md sticky top-0 z-50">
             <div className="navbar max-w-7xl mx-auto px-4">
                 {/* Mobile Menu Button */}
                 <div className="lg:hidden mr-3">
-                    <label className="btn btn-circle swap swap-rotate" aria-label="Toggle navigation menu">
-                        <input type="checkbox" onChange={() => setIsMenuOpen(!isMenuOpen)} checked={isMenuOpen} />
+                    <label
+                        className="btn btn-circle swap swap-rotate"
+                        aria-label="Toggle navigation menu"
+                        aria-expanded={isMenuOpen}
+                    >
+                        <input
+                            type="checkbox"
+                            onChange={() => setIsMenuOpen(!isMenuOpen)}
+                            checked={isMenuOpen}
+                        />
 
                         {/* Hamburger icon */}
                         <svg
@@ -71,6 +78,7 @@ const Navbar = () => {
                         </svg>
                     </label>
                 </div>
+
                 {/* Logo */}
                 <div className="flex-1">
                     <motion.div
@@ -84,8 +92,9 @@ const Navbar = () => {
                         </Link>
                     </motion.div>
                 </div>
-                <div className='lg:hidden'>
-                    <ThemeToggle></ThemeToggle>
+
+                <div className="lg:hidden">
+                    <ThemeToggle />
                 </div>
 
                 {/* Desktop Menu */}
@@ -95,24 +104,22 @@ const Navbar = () => {
                             key={item.name}
                             to={item.path}
                             className={({ isActive }) =>
-                                `text-base font-medium ${isActive ? 'text-primary underline' : 'text-gray-700 hover:text-primary'
+                                `text-base font-medium transition-colors duration-300 ${isActive ? 'text-primary underline' : 'text-gray-700 hover:text-primary'
                                 }`
                             }
                         >
                             {item.name}
                         </NavLink>
                     ))}
-                    <ThemeToggle></ThemeToggle>
-                    <div>
-                        {isLoggedIn && (
-                            <button
-                                className="btn btn-sm btn-outline text-error"
-                                onClick={() => setIsLoggedIn(false)}
-                            >
-                                <FaSignOutAlt className="mr-1" /> Logout
-                            </button>
-                        )}
-                    </div>
+                    <ThemeToggle />
+                    {isLoggedIn && (
+                        <button
+                            className="btn btn-sm btn-outline text-error transition-all duration-300 hover:scale-105"
+                            onClick={() => setIsLoggedIn(false)}
+                        >
+                            <FaSignOutAlt className="mr-1" /> Logout
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -124,10 +131,10 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.3 }}
-                        className="lg:hidden px-4 pb-4"
+                        className="lg:hidden px-4 pb-4 backdrop-blur-sm bg-base-100/80 rounded-b-xl shadow"
                     >
                         <motion.ul
-                            className="menu bg-base-100 rounded-box shadow w-full space-y-2 mt-2"
+                            className="menu rounded-box w-full space-y-2 mt-2"
                             variants={listVariants}
                             initial="initial"
                             animate="animate"
@@ -138,7 +145,8 @@ const Navbar = () => {
                                         to={item.path}
                                         onClick={() => setIsMenuOpen(false)}
                                         className={({ isActive }) =>
-                                            isActive ? 'text-primary font-semibold' : 'hover:text-primary'
+                                            `block py-2 px-3 text-sm transition-colors duration-300 ${isActive ? 'text-primary font-semibold' : 'hover:text-primary'
+                                            }`
                                         }
                                     >
                                         {item.name}
@@ -152,7 +160,7 @@ const Navbar = () => {
                                             setIsLoggedIn(false);
                                             setIsMenuOpen(false);
                                         }}
-                                        className="text-error"
+                                        className="text-error hover:text-red-600 transition-all duration-300"
                                     >
                                         <FaSignOutAlt className="inline mr-1" /> Logout
                                     </button>
