@@ -1,8 +1,9 @@
-import { Link, NavLink } from 'react-router';
+import { Link, NavLink } from 'react-router'; // Use 'react-router-dom' for React Router v6+
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaCar, FaSignOutAlt } from 'react-icons/fa';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import ThemeToggle from '../Utils/ThemeToggle';
+import { AuthContext } from '../Provider/AuthProvider';
 
 const listVariants = {
     initial: {},
@@ -20,10 +21,10 @@ const itemVariants = {
 };
 
 const Navbar = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { user, logOut } = useContext(AuthContext);
 
-    const navItems = isLoggedIn
+    const navItems = user
         ? [
             { name: 'Home', path: '/' },
             { name: 'Available Cars', path: '/available-cars' },
@@ -34,12 +35,20 @@ const Navbar = () => {
         : [
             { name: 'Home', path: '/' },
             { name: 'Available Cars', path: '/available-cars' },
-            { name: 'Log In', path: '/login' },
         ];
 
+    const handleLogout = async () => {
+        try {
+            await logOut();
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
+
     return (
-        <div className="backdrop-blur-lg shadow-md sticky top-0 z-50">
-            <div className="navbar max-w-7xl mx-auto px-4">
+        <div className="backdrop-blur-md shadow-md sticky top-0 z-50">
+            <div className="navbar lg:w-11/12  mx-auto px-4">
+
                 {/* Mobile Menu Button */}
                 <div className="lg:hidden mr-3">
                     <label
@@ -79,8 +88,8 @@ const Navbar = () => {
                     </label>
                 </div>
 
-                {/* Logo */}
-                <div className="flex-1">
+                {/* Left: Logo */}
+                <div className="flex-1 flex items-center lg:flex-none">
                     <motion.div
                         initial={{ x: -50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
@@ -93,12 +102,8 @@ const Navbar = () => {
                     </motion.div>
                 </div>
 
-                <div className="lg:hidden">
-                    <ThemeToggle />
-                </div>
-
-                {/* Desktop Menu */}
-                <div className="hidden lg:flex gap-6 items-center">
+                {/* Center: Nav Items for lg and up */}
+                <div className="hidden lg:flex flex-1 justify-center gap-6 items-center">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.name}
@@ -111,15 +116,31 @@ const Navbar = () => {
                             {item.name}
                         </NavLink>
                     ))}
+                </div>
+
+                {/* Right: Login/Logout and Theme Toggle */}
+                <div className="hidden lg:flex items-center gap-4">
                     <ThemeToggle />
-                    {isLoggedIn && (
+                    {user ? (
                         <button
-                            className="btn btn-sm btn-outline text-error transition-all duration-300 hover:scale-105"
-                            onClick={() => setIsLoggedIn(false)}
+                            className="btn btn-sm btn-outline text-error transition-all duration-300 hover:scale-105 flex items-center"
+                            onClick={handleLogout}
                         >
                             <FaSignOutAlt className="mr-1" /> Logout
                         </button>
+                    ) : (
+                        <Link
+                            to="/login"
+                            className="btn btn-sm btn-primary text-white hover:bg-primary-focus"
+                        >
+                            Log In
+                        </Link>
                     )}
+                </div>
+
+                {/* Mobile ThemeToggle */}
+                <div className="lg:hidden">
+                    <ThemeToggle />
                 </div>
             </div>
 
@@ -131,7 +152,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.3 }}
-                        className="lg:hidden px-4 pb-4 backdrop-blur-sm bg-base-100/80 rounded-b-xl shadow"
+                        className="absolute lg:hidden px-4 pb-4 backdrop-blur-sm bg-base-100/80 rounded-b-xl shadow"
                     >
                         <motion.ul
                             className="menu rounded-box w-full space-y-2 mt-2"
@@ -153,17 +174,27 @@ const Navbar = () => {
                                     </NavLink>
                                 </motion.li>
                             ))}
-                            {isLoggedIn && (
+                            {user ? (
                                 <motion.li variants={itemVariants}>
                                     <button
                                         onClick={() => {
-                                            setIsLoggedIn(false);
+                                            handleLogout();
                                             setIsMenuOpen(false);
                                         }}
-                                        className="text-error hover:text-red-600 transition-all duration-300"
+                                        className="text-error hover:text-red-600 transition-all duration-300 flex items-center"
                                     >
                                         <FaSignOutAlt className="inline mr-1" /> Logout
                                     </button>
+                                </motion.li>
+                            ) : (
+                                <motion.li variants={itemVariants}>
+                                    <NavLink
+                                        to="/login"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="hover:text-primary"
+                                    >
+                                        Log In
+                                    </NavLink>
                                 </motion.li>
                             )}
                         </motion.ul>

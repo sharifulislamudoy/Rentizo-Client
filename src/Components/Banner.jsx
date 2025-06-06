@@ -9,7 +9,7 @@ const Banner = () => {
             style={{ backgroundImage: `url(${BannerImg})` }}
         >
             {/* Overlay */}
-            <div class="absolute inset-0 bg-black opacity-70"></div>
+            <div className="absolute inset-0 bg-black opacity-70"></div>
 
             {/* Content */}
             <motion.div
