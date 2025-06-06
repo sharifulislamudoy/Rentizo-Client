@@ -1,11 +1,15 @@
 import { FaFacebookF, FaTwitter, FaInstagram, FaGithub, FaCar, FaArrowUp, FaLongArrowAltUp } from 'react-icons/fa';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
+import { useContext } from 'react';
+import { AuthContext } from '../Provider/AuthProvider';
 
 const Footer = () => {
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
+    const {user} =useContext(AuthContext)
 
     const fadeUp = {
         hidden: { opacity: 0, y: 30 },
@@ -54,7 +58,9 @@ const Footer = () => {
                         <li><Link to="/add-car" className="hover:text-primary">Add Car</Link></li>
                         <li><Link to="/my-cars" className="hover:text-primary">My Cars</Link></li>
                         <li><Link to="/my-bookings" className="hover:text-primary">My Bookings</Link></li>
-                        <li><Link to="/login" className="hover:text-primary">Login</Link></li>
+                        <li>
+                            {user ? '' : <Link to="/login" className="hover:text-primary">Login</Link>}
+                        </li>
                     </ul>
                 </motion.div>
 

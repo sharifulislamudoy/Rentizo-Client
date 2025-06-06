@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { FaGoogle } from 'react-icons/fa';
 import { Link, useLocation, useNavigate } from 'react-router';
 import useScrollToTop from '../Utils/UseScrollToTop';
 import { useContext, useState } from 'react';
@@ -8,6 +7,7 @@ import Swal from 'sweetalert2';
 import { auth } from '../Firebase/firebase__config__';
 import { toast } from 'react-toastify';
 import { signInWithPopup } from 'firebase/auth';
+import { FcGoogle } from 'react-icons/fc';
 
 const Login = () => {
     useScrollToTop();
@@ -122,7 +122,7 @@ const handleGoogleLogin = async () => {
                     onClick={handleGoogleLogin}
                     className="btn btn-outline w-full flex items-center justify-center gap-2"
                 >
-                    <FaGoogle />
+                    <FcGoogle />
                     Continue with Google
                 </button>
 
