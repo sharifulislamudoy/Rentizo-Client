@@ -46,7 +46,7 @@ const {user} = useContext(AuthContext)
     };
 
     try {
-      const res = await fetch('https://your-api-url.com/cars', {
+      const res = await fetch('http://localhost:3000/cars', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCar),

@@ -8,10 +8,29 @@ const AvailableCars = () => {
   const [sortBy, setSortBy] = useState('newest');
 
   useEffect(() => {
-    fetch('https://your-api-url.com/cars/available')
+    fetch('http://localhost:3000/cars/')
       .then((res) => res.json())
-      .then((data) => setCars(data));
+      .then((data) => {
+        const availableCars = data.filter(car => car.availability === "Available");
+        setCars(availableCars);
+      });
   }, []);
+
+  //   const handleBookNow = async (car) => {
+  //   try {
+  //     await fetch(`http://localhost:3000/cars/book/${car._id}`, {
+  //       method: 'PATCH',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     navigate('/my-bookings');
+  //   } catch (error) {
+  //     console.error('Booking failed:', error);
+  //   }
+  // };
+
 
   const sortCars = (cars) => {
     const sorted = [...cars];
@@ -30,7 +49,7 @@ const AvailableCars = () => {
   const sortedCars = sortCars(cars);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen w-11/12 mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <h2 className="text-3xl font-bold">Available Cars</h2>
         <div className="flex items-center gap-2">
@@ -76,7 +95,7 @@ const AvailableCars = () => {
                 <p><strong>Price/Day:</strong> ${car.pricePerDay}</p>
                 <p><strong>Location:</strong> {car.location}</p>
                 <div className="card-actions justify-end">
-                  <Link to={`/car/${car._id}`} className="btn btn-primary">
+                  <Link to={`/car-details/${car._id}`} className="btn btn-primary">
                     Book Now
                   </Link>
                 </div>
@@ -98,7 +117,7 @@ const AvailableCars = () => {
                 <p><strong>Price/Day:</strong> ${car.pricePerDay}</p>
                 <p><strong>Location:</strong> {car.location}</p>
               </div>
-              <Link to={`/car/${car._id}`} className="btn btn-primary self-start md:self-center">
+              <Link to={`/car-details/${car._id}`} className="btn btn-primary self-start md:self-center">
                 Book Now
               </Link>
             </motion.div>

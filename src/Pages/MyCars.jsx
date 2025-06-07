@@ -8,7 +8,7 @@ import { AuthContext } from '../Provider/AuthProvider';
 import useScrollToTop from '../Utils/UseScrollToTop';
 
 const MyCars = () => {
-    useScrollToTop();
+  useScrollToTop();
   const { user } = useContext(AuthContext)
   const [cars, setCars] = useState([]);
   const [editingCar, setEditingCar] = useState(null);
@@ -16,10 +16,10 @@ const MyCars = () => {
   // Fetch user's cars
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://your-api-url.com/cars?email=${user.email}`)
+      fetch(`http://localhost:3000/cars?email=${user.email}`)
         .then((res) => res.json())
         .then((data) => setCars(data))
-        .catch(() => toast.error('Failed to load your cars.'));
+        .catch(() => toast.error('Failed to load your cars. Please try again later.'));
     }
   }, [user]);
 
@@ -27,6 +27,7 @@ const MyCars = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     const form = e.target;
+
     const updatedCar = {
       carModel: form.carModel.value,
       pricePerDay: parseFloat(form.pricePerDay.value),
@@ -38,26 +39,40 @@ const MyCars = () => {
       location: form.location.value,
     };
 
-    try {
-      const res = await fetch(`https://your-api-url.com/cars/${editingCar._id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedCar),
-      });
+    const result = await Swal.fire({
+      title: "Do you want to save the changes?",
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: "Save",
+      denyButtonText: `Don't save`
+    });
 
-      if (res.ok) {
-        toast.success('Car updated successfully!');
-        setCars((prev) =>
-          prev.map((car) => (car._id === editingCar._id ? { ...car, ...updatedCar } : car))
-        );
-        setEditingCar(null);
-      } else {
-        throw new Error('Update failed');
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`http://localhost:3000/cars/${editingCar._id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedCar),
+        });
+
+        if (res.ok) {
+          toast.success('Car updated successfully!');
+          setCars((prev) =>
+            prev.map((car) => (car._id === editingCar._id ? { ...car, ...updatedCar } : car))
+          );
+          setEditingCar(null);
+          Swal.fire("Saved!", "", "success");
+        } else {
+          throw new Error('Update failed');
+        }
+      } catch {
+        toast.error('Failed to update car');
       }
-    } catch {
-      toast.error('Failed to update car');
+    } else if (result.isDenied) {
+      Swal.fire("Changes are not saved", "", "info");
     }
   };
+
 
   // Handle delete
   const handleDelete = (id) => {
@@ -70,7 +85,7 @@ const MyCars = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`https://your-api-url.com/cars/${id}`, {
+          const res = await fetch(`http://localhost:3000/cars/${id}`, {
             method: 'DELETE',
           });
           if (res.ok) {
@@ -102,9 +117,9 @@ const MyCars = () => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen">
       <h2 className="text-3xl font-bold mb-6 text-center">My Cars</h2>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto w-11/12 mx-auto">
         <table className="table table-zebra w-full">
           <thead>
             <tr>

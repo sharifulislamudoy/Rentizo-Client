@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
           Component: AvailableCars,
         },
         {
-          path: '/car-details',
+          path: '/car-details/:id',
           element: <CarDetails />
         },
         {

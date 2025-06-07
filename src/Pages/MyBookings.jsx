@@ -9,7 +9,7 @@ const MyBookings = () => {
 
   // Example fetch from backend (replace with real API)
   useEffect(() => {
-    fetch('/api/my-bookings')
+    fetch('http://localhost:3000/cars/')
       .then(res => res.json())
       .then(data => setBookings(data));
   }, []);

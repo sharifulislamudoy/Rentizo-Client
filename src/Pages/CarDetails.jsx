@@ -1,15 +1,18 @@
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
+import useScrollToTop from '../Utils/UseScrollToTop';
 
 const CarDetails = () => {
+  useScrollToTop();
+  const navigate = useNavigate();
   const { id } = useParams();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`https://your-api-url.com/cars/${id}`)
+    fetch(`http://localhost:3000/cars/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCar(data);
@@ -17,24 +20,42 @@ const CarDetails = () => {
       });
   }, [id]);
 
-  const handleBooking = () => {
-    Swal.fire({
+  const handleBooking = async (car) => {
+    const result = await Swal.fire({
       title: 'Confirm Booking',
       html: `
-        <p><strong>Car:</strong> ${car.carModel}</p>
-        <p><strong>Price/Day:</strong> $${car.pricePerDay}</p>
-        <p><strong>Location:</strong> ${car.location}</p>
-      `,
+      <p><strong>Car:</strong> ${car.carModel}</p>
+      <p><strong>Price/Day:</strong> $${car.pricePerDay}</p>
+      <p><strong>Location:</strong> ${car.location}</p>
+    `,
       icon: 'info',
       showCancelButton: true,
       confirmButtonText: 'Confirm',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Book the car (post to DB or redirect)
-        Swal.fire('Booked!', 'Your booking has been confirmed.', 'success');
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`http://localhost:3000/cars/book/${car._id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to book the car');
+        }
+
+        await Swal.fire('Booked!', 'Your booking has been confirmed.', 'success');
+        navigate('/my-bookings');
+      } catch (error) {
+        console.error('Booking failed:', error);
+        Swal.fire('Error!', 'Something went wrong while booking.', 'error');
+      }
+    }
   };
+
+
 
   if (loading) {
     return <div className="text-center py-20">Loading...</div>;
@@ -58,12 +79,15 @@ const CarDetails = () => {
           <p className="text-lg mb-2"><strong>Price Per Day:</strong> ${car.pricePerDay}</p>
           <p className="text-lg mb-2"><strong>Availability:</strong> {car.availability}</p>
           <p className="text-lg mb-2"><strong>Location:</strong> {car.location}</p>
-          <p className="text-lg mb-2"><strong>Registration Number:</strong> {car.registrationNumber}</p>
+          <p className="text-lg mb-2"><strong>Registration Number:</strong> {car.registration}</p>
+          <p className="text-sm text-gray-600 mt-2">
+            <strong>Listed by:</strong> {car.addedBy?.name} ({car.addedBy?.email})
+          </p>
 
           <div className="mt-4">
             <h4 className="font-semibold mb-1">Features:</h4>
             <ul className="list-disc list-inside text-gray-700">
-              {car.features.map((feature, index) => (
+              {Array.isArray(car.features) && car.features.map((feature, index) => (
                 <li key={index}>{feature}</li>
               ))}
             </ul>
@@ -75,11 +99,12 @@ const CarDetails = () => {
           </div>
 
           <button
-            onClick={handleBooking}
+            onClick={() => handleBooking(car)}
             className="btn btn-primary mt-6"
           >
             Book Now
           </button>
+
         </div>
       </div>
     </motion.div>
