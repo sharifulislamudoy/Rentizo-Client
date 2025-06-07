@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import moment from "moment";
+import { motion } from "framer-motion";
+
+const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            delay: i * 0.1,
+            duration: 0.4,
+            ease: "easeOut",
+        },
+    }),
+};
 
 const RecentListings = () => {
     const [cars, setCars] = useState([]);
@@ -24,13 +38,26 @@ const RecentListings = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8 my-3">
-            <h2 className="text-4xl md:text-5xl font-bold mb-12 font-poppins text-primary text-center">Recent Listings</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {cars.map((car) => (
-                    <div
+        <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: false, amount: 0.3 }}
+            className="px-4 py-8 my-3 w-5/6 mx-auto"
+        >
+            <h2 className="text-4xl md:text-5xl font-bold mb-12 font-poppins text-primary text-center">
+                Recent Listings
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 bg-base-100">
+                {cars.map((car, i) => (
+                    <motion.div
                         key={car._id}
-                        className="bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                        custom={i}
+                        initial="hidden"
+                        whileInView="visible"
+                        variants={cardVariants}
+                        className="bg-base-300 rounded-2xl overflow-hidden shadow hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                        viewport={{ once: false }}
                     >
                         <img
                             src={car.image}
@@ -38,7 +65,7 @@ const RecentListings = () => {
                             className="w-full h-48 object-cover"
                         />
                         <div className="p-4 space-y-2">
-                            <h3 className="text-xl font-bold">{car.carModel}</h3>
+                            <h3 className="text-xl font-bold text-primary">{car.carModel}</h3>
                             <p className="text-gray-700">${car.pricePerDay}/day</p>
                             <div className="flex items-center gap-2">
                                 {car.availability === "Available" ? (
@@ -58,10 +85,10 @@ const RecentListings = () => {
                                 Added {moment(car.createdAt).fromNow()}
                             </p>
                         </div>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
-        </div>
+        </motion.div>
     );
 };
 
