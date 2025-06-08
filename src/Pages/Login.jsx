@@ -47,28 +47,28 @@ const Login = () => {
     };
 
 
-const handleGoogleLogin = async () => {
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
-        if (result.user) {
-            Swal.fire({
-                title: "Login Successful!",
-                icon: "success",
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                background: "#f0f9ff",
-                color: "#0f172a",
-            });
-            navigate('/');
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            if (result.user) {
+                Swal.fire({
+                    title: "Login Successful!",
+                    icon: "success",
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: "#f0f9ff",
+                    color: "#0f172a",
+                });
+                navigate('/');
+            }
+        } catch (error) {
+            console.error("Google Login Error:", error.message);
+            toast.error(`Can't sign in: ${error.message}`);
         }
-    } catch (error) {
-        console.error("Google Login Error:", error.message);
-        toast.error(`Can't sign in: ${error.message}`);
-    }
-};
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-base-100 px-4">

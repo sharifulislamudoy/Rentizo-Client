@@ -11,6 +11,7 @@ import MyCars from "../Pages/MyCars";
 import AvailableCars from "../Pages/AvailableCars";
 import CarDetails from "../Pages/CarDetails";
 import MyBookings from "../Pages/MyBookings";
+import HolidayDeal from "../Components/HolidayDeal";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
         {
           path: '/my-bookings',
           element: <MyBookings />
+        },
+        {
+          path: '/holiday-deal',
+          Component: HolidayDeal,
         }
     ]
   },

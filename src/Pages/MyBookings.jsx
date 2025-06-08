@@ -35,18 +35,29 @@ const MyBookings = () => {
       title: 'Are you sure you want to cancel this booking?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, cancel it!',
+      confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'No',
     });
 
     if (confirm.isConfirmed) {
-      const updated = bookings.map((b) =>
-        b._id === id ? { ...b, status: 'Canceled' } : b
-      );
-      setBookings(updated);
-      toast.success('Booking canceled successfully!');
+      try {
+        const res = await fetch(`http://localhost:3000/bookings/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (res.ok) {
+          setBookings(bookings.filter((b) => b._id !== id)); // UI remove
+          toast.success('Booking deleted successfully!');
+        } else {
+          toast.error('Failed to delete booking.');
+        }
+      } catch (error) {
+        toast.error('Error deleting booking.');
+      }
     }
   };
+
+
 
   const handleEdit = (booking) => {
     setSelectedBooking(booking);

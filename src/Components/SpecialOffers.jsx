@@ -15,7 +15,7 @@ const offers = [
     title: 'Holiday Luxury Deal',
     description: 'Luxury cars starting at just $99/day this holiday season.',
     button: 'Learn More',
-    link: '/available-cars',
+    link: '/holiday-deal',
   },
 ];
 

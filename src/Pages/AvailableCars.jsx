@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
+import useScrollToTop from '../Utils/UseScrollToTop';
 
 const AvailableCars = () => {
+  useScrollToTop();
   const [cars, setCars] = useState([]);
   const [view, setView] = useState('grid'); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState('newest');
@@ -15,21 +17,6 @@ const AvailableCars = () => {
         setCars(availableCars);
       });
   }, []);
-
-  //   const handleBookNow = async (car) => {
-  //   try {
-  //     await fetch(`http://localhost:3000/cars/book/${car._id}`, {
-  //       method: 'PATCH',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     });
-
-  //     navigate('/my-bookings');
-  //   } catch (error) {
-  //     console.error('Booking failed:', error);
-  //   }
-  // };
 
 
   const sortCars = (cars) => {
