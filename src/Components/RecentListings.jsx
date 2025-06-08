@@ -19,12 +19,16 @@ const cardVariants = {
 const RecentListings = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAll, setShowAll] = useState(false);
 
     useEffect(() => {
         fetch("http://localhost:3000/cars/")
             .then((res) => res.json())
             .then((data) => {
-                setCars(data);
+                const sorted = data.sort(
+                    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                );
+                setCars(sorted);
                 setLoading(false);
             })
             .catch((err) => {
@@ -36,6 +40,8 @@ const RecentListings = () => {
     if (loading) {
         return <p className="text-center py-10">Loading car listings...</p>;
     }
+
+    const visibleCars = showAll ? cars : cars.slice(0, 6);
 
     return (
         <motion.div
@@ -49,7 +55,7 @@ const RecentListings = () => {
                 Recent Listings
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 bg-base-100">
-                {cars.map((car, i) => (
+                {visibleCars.map((car, i) => (
                     <motion.div
                         key={car._id}
                         custom={i}
@@ -78,9 +84,7 @@ const RecentListings = () => {
                                     </span>
                                 )}
                             </div>
-                            <p className="text-sm text-gray-500">
-                                Bookings: {car.bookingCount}
-                            </p>
+                            <p className="text-sm text-gray-500">Bookings: {car.bookingCount}</p>
                             <p className="text-sm text-gray-400">
                                 Added {moment(car.createdAt).fromNow()}
                             </p>
@@ -88,6 +92,17 @@ const RecentListings = () => {
                     </motion.div>
                 ))}
             </div>
+
+            {cars.length > 6 && (
+                <div className="text-center mt-8">
+                    <button
+                        onClick={() => setShowAll(!showAll)}
+                        className="btn btn-primary"
+                    >
+                        {showAll ? "Show Less" : "See All"}
+                    </button>
+                </div>
+            )}
         </motion.div>
     );
 };

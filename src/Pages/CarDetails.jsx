@@ -1,15 +1,28 @@
 import { useNavigate, useParams } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import useScrollToTop from '../Utils/UseScrollToTop';
+import { AuthContext } from '../Provider/AuthProvider';
 
 const CarDetails = () => {
   useScrollToTop();
+  const { user } = useContext(AuthContext)
   const navigate = useNavigate();
   const { id } = useParams();
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userBookings, setUserBookings] = useState([]);
+  const alreadyBooked = userBookings.some(booking => booking.carId === id);
+
+  useEffect(() => {
+    if (user?.email) {
+      fetch(`http://localhost:3000/bookings?email=${user.email}`)
+        .then(res => res.json())
+        .then(data => setUserBookings(data));
+    }
+  }, [user]);
+
 
   useEffect(() => {
     fetch(`http://localhost:3000/cars/${id}`)
@@ -34,17 +47,33 @@ const CarDetails = () => {
     });
 
     if (result.isConfirmed) {
+      const bookingInfo = {
+        carId: car._id,
+        carModel: car.carModel,
+        pricePerDay: car.pricePerDay,
+        location: car.location,
+        userEmail: user?.email,
+        userName: user?.displayName,
+        bookingDate: new Date(),
+      };
+
       try {
-        const response = await fetch(`http://localhost:3000/cars/book/${car._id}`, {
-          method: 'PATCH',
+        const response = await fetch('http://localhost:3000/bookings', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(bookingInfo),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to book the car');
+          throw new Error('Failed to save booking');
         }
+
+        // ✅ Booking successful → increment booking count
+        await fetch(`http://localhost:3000/bookings/${car._id}`, {
+          method: 'PATCH',
+        });
 
         await Swal.fire('Booked!', 'Your booking has been confirmed.', 'success');
         navigate('/my-bookings');
@@ -54,6 +83,7 @@ const CarDetails = () => {
       }
     }
   };
+
 
 
 
@@ -101,9 +131,11 @@ const CarDetails = () => {
           <button
             onClick={() => handleBooking(car)}
             className="btn btn-primary mt-6"
+            disabled={alreadyBooked}
           >
-            Book Now
+            {alreadyBooked ? 'Already Booked' : 'Book Now'}
           </button>
+
 
         </div>
       </div>
