@@ -12,49 +12,58 @@ import AvailableCars from "../Pages/AvailableCars";
 import CarDetails from "../Pages/CarDetails";
 import MyBookings from "../Pages/MyBookings";
 import HolidayDeal from "../Components/HolidayDeal";
+import PrivateRoute from "../Provider/PrivateRoute";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: Main,
-    errorElement:<NotFoundPage></NotFoundPage>,
+    errorElement: <NotFoundPage></NotFoundPage>,
     children: [
-        {
-            index: true,
-            Component: Home,
-        },
-        {
-          path: '/login',
-          Component: Login,
-        },
-        {
-          path: '/register',
-          Component: Register
-        },
-        {
-          path: '/add-car',
-          element: <AddCar />
-        },
-        {
-          path: '/my-cars',
-          element: <MyCars />
-        },
-        {
-          path: '/available-cars',
-          Component: AvailableCars,
-        },
-        {
-          path: '/car-details/:id',
-          element: <CarDetails />
-        },
-        {
-          path: '/my-bookings',
-          element: <MyBookings />
-        },
-        {
-          path: '/holiday-deal',
-          Component: HolidayDeal,
-        }
+      {
+        index: true,
+        Component: Home,
+      },
+      {
+        path: '/login',
+        Component: Login,
+      },
+      {
+        path: '/register',
+        Component: Register
+      },
+      {
+        path: '/add-car',
+        element: <PrivateRoute>
+          <AddCar />
+        </PrivateRoute>
+      },
+      {
+        path: '/my-cars',
+        element: <PrivateRoute>
+          <MyCars />
+        </PrivateRoute>
+      },
+      {
+        path: '/available-cars',
+        Component: AvailableCars,
+      },
+      {
+        path: '/car-details/:id',
+        element: <PrivateRoute>
+          <CarDetails />
+        </PrivateRoute>
+      },
+      {
+        path: '/my-bookings',
+        element: <PrivateRoute>
+          <MyBookings />
+        </PrivateRoute>
+      },
+      {
+        path: '/holiday-deal',
+        Component: HolidayDeal,
+      }
     ]
   },
 ]);

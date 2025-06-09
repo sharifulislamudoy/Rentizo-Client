@@ -49,7 +49,7 @@ const RecentListings = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: false, amount: 0.3 }}
-            className="px-4 py-8 my-3 w-5/6 mx-auto"
+            className="px-4 py-8 my-3 w-full max-w-6xl mx-auto"
         >
             <h2 className="text-4xl md:text-5xl font-bold mb-12 font-poppins text-primary text-center">
                 Recent Listings
