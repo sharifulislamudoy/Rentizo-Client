@@ -18,9 +18,8 @@ const MyBookings = () => {
   const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [editedLocation, setEditedLocation] = useState('');
-
-
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     if (user?.email) {
@@ -35,7 +34,7 @@ const MyBookings = () => {
       title: 'Are you sure you want to cancel this booking?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonText: 'Yes, cancel it!',
       cancelButtonText: 'No',
     });
 
@@ -46,22 +45,21 @@ const MyBookings = () => {
         });
 
         if (res.ok) {
-          setBookings(bookings.filter((b) => b._id !== id)); // UI remove
-          toast.success('Booking deleted successfully!');
+          setBookings(bookings.filter((b) => b._id !== id));
+          toast.success('Booking cancelled successfully!');
         } else {
-          toast.error('Failed to delete booking.');
+          toast.error('Failed to cancel booking.');
         }
       } catch (error) {
-        toast.error('Error deleting booking.');
+        toast.error('Error cancelling booking.');
       }
     }
   };
 
-
-
   const handleEdit = (booking) => {
     setSelectedBooking(booking);
-    setEditedLocation(booking.location || '');
+    setStartDate(booking.startDate?.split('T')[0] || '');
+    setEndDate(booking.endDate?.split('T')[0] || '');
     document.getElementById('edit_modal').showModal();
   };
 
@@ -69,12 +67,14 @@ const MyBookings = () => {
     const res = await fetch(`http://localhost:3000/bookings/${selectedBooking._id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location: editedLocation }),
+      body: JSON.stringify({ startDate, endDate }),
     });
 
     if (res.ok) {
       const updated = bookings.map((b) =>
-        b._id === selectedBooking._id ? { ...b, location: editedLocation } : b
+        b._id === selectedBooking._id
+          ? { ...b, startDate, endDate }
+          : b
       );
       setBookings(updated);
       toast.success('Booking updated!');
@@ -84,8 +84,6 @@ const MyBookings = () => {
     }
   };
 
-
-  // Aggregate price by model for chart
   const chartData = Array.from(
     bookings.reduce((acc, cur) => {
       const model = cur.carModel || cur.model;
@@ -109,10 +107,10 @@ const MyBookings = () => {
         <table className="table w-full border border-gray-300">
           <thead className="bg-base-200 text-sm text-left">
             <tr>
+              <th>Image</th>
               <th>Model</th>
               <th>Booking Date</th>
               <th>Total Price</th>
-              <th>Location</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -126,17 +124,25 @@ const MyBookings = () => {
                   } hover:shadow-md`}
                 whileHover={{ scale: 1.01 }}
               >
+                <td>
+                  <img
+                    src={booking.carImage}
+                    alt={booking.carModel}
+                    className="w-16 h-10 object-cover rounded"
+                  />
+                </td>
                 <td className="font-semibold">
                   {booking.carModel || booking.model}
                 </td>
                 <td>{new Date(booking.bookingDate).toLocaleString('en-GB')}</td>
                 <td>${booking.totalPrice || booking.pricePerDay}</td>
-                <td>{booking.location}</td>
                 <td>
                   <span
                     className={`badge ${booking.status === 'Canceled'
-                      ? 'badge-error'
-                      : 'badge-success'
+                        ? 'badge-error'
+                        : booking.status === 'Pending'
+                          ? 'badge-warning'
+                          : 'badge-success'
                       }`}
                   >
                     {booking.status || 'Confirmed'}
@@ -145,14 +151,14 @@ const MyBookings = () => {
                 <td className="space-x-2">
                   <button
                     onClick={() => handleEdit(booking)}
-                    className="btn btn-sm btn-info"
+                    className="btn btn-sm bg-blue-500 hover:bg-blue-600 text-white"
                   >
-                    <FaEdit className="mr-1" /> Edit
+                    <FaEdit className="mr-1" /> Modify Date
                   </button>
 
                   <button
                     onClick={() => handleCancel(booking._id)}
-                    className="btn btn-sm btn-error"
+                    className="btn btn-sm bg-red-500 hover:bg-red-600 text-white"
                   >
                     <FaTrash className="mr-1" /> Cancel
                   </button>
@@ -168,20 +174,36 @@ const MyBookings = () => {
           </p>
         )}
       </div>
+
+      {/* Modal for Date Update */}
       <dialog id="edit_modal" className="modal">
         <div className="modal-box">
-          <h3 className="font-bold text-lg mb-4">Edit Booking</h3>
+          <h3 className="font-bold text-lg mb-4">Modify Booking Dates</h3>
+
           <label className="label">
-            <span className="label-text">Location</span>
+            <span className="label-text">Start Date</span>
           </label>
           <input
-            type="text"
-            value={editedLocation}
-            onChange={(e) => setEditedLocation(e.target.value)}
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="input input-bordered w-full mb-2"
+          />
+
+          <label className="label">
+            <span className="label-text">End Date</span>
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
             className="input input-bordered w-full"
           />
+
           <div className="modal-action">
-            <button onClick={handleUpdate} className="btn btn-primary">Save</button>
+            <button onClick={handleUpdate} className="btn btn-primary">
+              Save
+            </button>
             <form method="dialog">
               <button className="btn">Cancel</button>
             </form>
@@ -189,8 +211,7 @@ const MyBookings = () => {
         </div>
       </dialog>
 
-
-      {/* Chart Section */}
+      {/* Chart */}
       {bookings.length > 0 && (
         <div className="mt-12">
           <h3 className="text-2xl font-semibold mb-4 text-center">

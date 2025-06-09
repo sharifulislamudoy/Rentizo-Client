@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from 'react';
-// import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
@@ -9,19 +8,32 @@ import useScrollToTop from '../Utils/UseScrollToTop';
 
 const MyCars = () => {
   useScrollToTop();
-  const { user } = useContext(AuthContext)
+  const { user } = useContext(AuthContext);
   const [cars, setCars] = useState([]);
   const [editingCar, setEditingCar] = useState(null);
+  const [sortOption, setSortOption] = useState('');
 
   // Fetch user's cars
   useEffect(() => {
     if (user?.email) {
       fetch(`http://localhost:3000/cars?email=${user.email}`)
         .then((res) => res.json())
-        .then((data) => setCars(data))
+        .then((data) => {
+          let sortedData = [...data];
+          if (sortOption === 'date-newest') {
+            sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          } else if (sortOption === 'date-oldest') {
+            sortedData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          } else if (sortOption === 'price-lowest') {
+            sortedData.sort((a, b) => a.pricePerDay - b.pricePerDay);
+          } else if (sortOption === 'price-highest') {
+            sortedData.sort((a, b) => b.pricePerDay - a.pricePerDay);
+          }
+          setCars(sortedData);
+        })
         .catch(() => toast.error('Failed to load your cars. Please try again later.'));
     }
-  }, [user]);
+  }, [user, sortOption]);
 
   // Handle update
   const handleUpdate = async (e) => {
@@ -73,7 +85,6 @@ const MyCars = () => {
     }
   };
 
-
   // Handle delete
   const handleDelete = (id) => {
     Swal.fire({
@@ -119,6 +130,21 @@ const MyCars = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen">
       <h2 className="text-3xl font-bold mb-6 text-center">My Cars</h2>
+
+      <div className="flex justify-end mb-4 w-11/12 mx-auto">
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="select select-bordered max-w-xs"
+        >
+          <option value="">Sort By</option>
+          <option value="date-newest">Date Added (Newest First)</option>
+          <option value="date-oldest">Date Added (Oldest First)</option>
+          <option value="price-lowest">Price (Lowest First)</option>
+          <option value="price-highest">Price (Highest First)</option>
+        </select>
+      </div>
+
       <div className="overflow-x-auto w-11/12 mx-auto">
         <table className="table table-zebra w-full">
           <thead>

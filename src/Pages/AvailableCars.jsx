@@ -6,8 +6,9 @@ import useScrollToTop from '../Utils/UseScrollToTop';
 const AvailableCars = () => {
   useScrollToTop();
   const [cars, setCars] = useState([]);
-  const [view, setView] = useState('grid'); // 'grid' or 'list'
+  const [view, setView] = useState('grid');
   const [sortBy, setSortBy] = useState('newest');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetch('http://localhost:3000/cars/')
@@ -17,7 +18,6 @@ const AvailableCars = () => {
         setCars(availableCars);
       });
   }, []);
-
 
   const sortCars = (cars) => {
     const sorted = [...cars];
@@ -33,13 +33,27 @@ const AvailableCars = () => {
     return sorted;
   };
 
-  const sortedCars = sortCars(cars);
+  const filteredCars = cars.filter((car) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      car.carModel.toLowerCase().includes(search) ||
+      car.location?.toLowerCase().includes(search)
+    );
+  });
+  const sortedCars = sortCars(filteredCars);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen w-11/12 mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <h2 className="text-3xl font-bold">Available Cars</h2>
         <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Search by model, Location"
+            className="input input-bordered"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
           <select
             className="select select-bordered"
             value={sortBy}
@@ -50,7 +64,6 @@ const AvailableCars = () => {
             <option value="low-price">Price (Lowest)</option>
             <option value="high-price">Price (Highest)</option>
           </select>
-
           <button
             className={`btn ${view === 'grid' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setView('grid')}
