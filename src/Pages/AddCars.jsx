@@ -4,12 +4,10 @@ import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../Provider/AuthProvider';
 import useScrollToTop from '../Utils/UseScrollToTop';
-// import { useAuth } from '../../hooks/useAuth'; // Custom hook that returns user info
 
 const AddCar = () => {
     useScrollToTop();
   const navigate = useNavigate();
-//   const { user } = useAuth(); // Must return logged in user's name, email, photo
 const {user} = useContext(AuthContext)
   const [loading, setLoading] = useState(false);
 

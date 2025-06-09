@@ -78,28 +78,6 @@ const Register = () => {
         }
     };
 
-    // googleLogin()
-    //     .then(result => {
-    //         if (result.user) {
-    //             Swal.fire({
-    //                 title: "Registration Successful!",
-    //                 icon: "success",
-    //                 toast: true,
-    //                 position: 'top-end',
-    //                 showConfirmButton: false,
-    //                 timer: 3000,
-    //                 timerProgressBar: true,
-    //                 background: "#f0f9ff",
-    //                 color: "#0f172a",
-    //             });
-    //             navigate('/');
-    //         }
-    //     })
-    //     .catch(error => {
-    //         console.log(error);
-    //         setError(error.message);
-    //     });
-
     return (
         <div className="min-h-screen flex items-center justify-center bg-base-100 px-4">
             <motion.div

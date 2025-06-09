@@ -95,16 +95,26 @@ const CarDetails = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
       className="p-6 max-w-5xl mx-auto"
     >
       <div className="grid md:grid-cols-2 gap-6">
-        <img
+        {/* Car image animation from Y-axis */}
+        <motion.img
           src={car.image}
           alt={car.carModel}
           className="w-full h-72 object-cover rounded shadow"
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
         />
 
-        <div>
+        {/* Car details animation from X-axis */}
+        <motion.div
+          initial={{ x: 100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut', delay: 0.2 }}
+        >
           <h2 className="text-3xl font-bold mb-4">{car.carModel}</h2>
           <p className="text-lg mb-2"><strong>Price Per Day:</strong> ${car.pricePerDay}</p>
           <p className="text-lg mb-2"><strong>Availability:</strong> {car.availability}</p>
@@ -135,11 +145,10 @@ const CarDetails = () => {
           >
             {alreadyBooked ? 'Already Booked' : 'Book Now'}
           </button>
-
-
-        </div>
+        </motion.div>
       </div>
     </motion.div>
+
   );
 };
 

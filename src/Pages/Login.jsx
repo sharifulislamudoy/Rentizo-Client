@@ -8,6 +8,7 @@ import { auth } from '../Firebase/firebase__config__';
 import { toast } from 'react-toastify';
 import { signInWithPopup } from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const Login = () => {
     useScrollToTop();
@@ -16,6 +17,7 @@ const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/'
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = e => {
         e.preventDefault();
@@ -80,13 +82,9 @@ const Login = () => {
             >
                 <h2 className="text-3xl font-bold text-center mb-6 text-primary">Login to Rentizo</h2>
 
-                <form
-                    onSubmit={handleLogin}
-                    className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4">
                     <div>
-                        <label className="label" htmlFor="email">
-                            Email
-                        </label>
+                        <label className="label" htmlFor="email">Email</label>
                         <input
                             name="email"
                             type="email"
@@ -96,16 +94,26 @@ const Login = () => {
                     </div>
 
                     <div>
-                        <label className="label" htmlFor="password">
-                            Password
-                        </label>
-                        <input
-                            name="password"
-                            type="password"
-                            required
-                            className="input input-bordered w-full"
-                        />
+                        <label className="label" htmlFor="password">Password</label>
+                        <div className="relative">
+                            <input
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                className="input input-bordered w-full pr-12" // Make sure enough padding on right
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl text-gray-500"
+                                title={showPassword ? "Hide Password" : "Show Password"}
+                            >
+                                {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                            </button>
+                        </div>
                     </div>
+
+
 
                     {error && (
                         <div className="text-error text-sm font-medium">{error}</div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import useScrollToTop from '../Utils/UseScrollToTop';
 
 const AvailableCars = () => {
@@ -40,10 +40,30 @@ const AvailableCars = () => {
       car.location?.toLowerCase().includes(search)
     );
   });
+
   const sortedCars = sortCars(filteredCars);
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    exit: { opacity: 0, y: 30, transition: { duration: 0.2 } },
+  };
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen w-11/12 mx-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 min-h-screen w-11/12 mx-auto"
+    >
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <h2 className="text-3xl font-bold">Available Cars</h2>
         <div className="flex items-center gap-2">
@@ -80,49 +100,73 @@ const AvailableCars = () => {
       </div>
 
       {view === 'grid' ? (
-        <div className="grid md:grid-cols-3 gap-6">
-          {sortedCars.map((car) => (
-            <motion.div
-              key={car._id}
-              className="card bg-base-100 shadow-xl"
-              whileHover={{ scale: 1.03 }}
-            >
-              <figure>
-                <img src={car.image} alt={car.carModel} className="w-full h-48 object-cover" />
-              </figure>
-              <div className="card-body">
-                <h2 className="card-title">{car.carModel}</h2>
-                <p><strong>Price/Day:</strong> ${car.pricePerDay}</p>
-                <p><strong>Location:</strong> {car.location}</p>
-                <div className="card-actions justify-end">
-                  <Link to={`/car-details/${car._id}`} className="btn btn-primary">
-                    Book Now
-                  </Link>
+        <motion.div
+          className="grid md:grid-cols-3 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <AnimatePresence>
+            {sortedCars.map((car) => (
+              <motion.div
+                key={car._id}
+                layout
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                whileHover={{ scale: 1.05, boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
+                className="card bg-base-100 shadow-xl transition-transform duration-300"
+              >
+                <figure>
+                  <img src={car.image} alt={car.carModel} className="w-full h-48 object-cover" />
+                </figure>
+                <div className="card-body">
+                  <h2 className="card-title">{car.carModel}</h2>
+                  <p><strong>Price/Day:</strong> ${car.pricePerDay}</p>
+                  <p><strong>Location:</strong> {car.location}</p>
+                  <div className="card-actions justify-end">
+                    <Link to={`/car-details/${car._id}`} className="btn btn-primary">
+                      Book Now
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       ) : (
-        <div className="space-y-4">
-          {sortedCars.map((car) => (
-            <motion.div
-              key={car._id}
-              className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg shadow"
-              whileHover={{ scale: 1.01 }}
-            >
-              <img src={car.image} alt={car.carModel} className="w-full md:w-48 h-36 object-cover rounded" />
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold">{car.carModel}</h3>
-                <p><strong>Price/Day:</strong> ${car.pricePerDay}</p>
-                <p><strong>Location:</strong> {car.location}</p>
-              </div>
-              <Link to={`/car-details/${car._id}`} className="btn btn-primary self-start md:self-center">
-                Book Now
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        <motion.div
+          className="space-y-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <AnimatePresence>
+            {sortedCars.map((car) => (
+              <motion.div
+                key={car._id}
+                layout
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                whileHover={{ scale: 1.02, boxShadow: '0px 4px 15px rgba(0,0,0,0.1)' }}
+                className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg shadow bg-white transition-transform duration-300"
+              >
+                <img src={car.image} alt={car.carModel} className="w-full md:w-48 h-36 object-cover rounded" />
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">{car.carModel}</h3>
+                  <p><strong>Price/Day:</strong> ${car.pricePerDay}</p>
+                  <p><strong>Location:</strong> {car.location}</p>
+                </div>
+                <Link to={`/car-details/${car._id}`} className="btn btn-primary self-start md:self-center">
+                  Book Now
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
     </motion.div>
   );

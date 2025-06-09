@@ -38,6 +38,28 @@ const Navbar = () => {
             { name: 'Available Cars', path: '/available-cars' },
         ];
 
+    // const handleLogout = async () => {
+    //     const result = await Swal.fire({
+    //         title: 'Are you sure?',
+    //         text: "You will be logged out!",
+    //         icon: 'warning',
+    //         showCancelButton: true,
+    //         confirmButtonColor: '#3085d6',
+    //         cancelButtonColor: '#d33',
+    //         confirmButtonText: 'Yes, log out'
+    //     });
+
+    //     if (result.isConfirmed) {
+    //         try {
+    //             await logOut();
+    //             Swal.fire('Logged out!', 'You have been logged out.', 'success');
+    //         } catch (error) {
+    //             console.error('Logout failed:', error);
+    //             Swal.fire('Error', 'Logout failed. Please try again.', 'error');
+    //         }
+    //     }
+    // };
+
     const handleLogout = async () => {
         const result = await Swal.fire({
             title: 'Are you sure?',
@@ -53,12 +75,16 @@ const Navbar = () => {
             try {
                 await logOut();
                 Swal.fire('Logged out!', 'You have been logged out.', 'success');
+                // Close drawers
+                document.getElementById('my-drawer-4')?.click();
+                document.getElementById('mobile-drawer')?.click();
             } catch (error) {
                 console.error('Logout failed:', error);
                 Swal.fire('Error', 'Logout failed. Please try again.', 'error');
             }
         }
     };
+
 
 
     return (
@@ -145,7 +171,11 @@ const Navbar = () => {
                                             <span className="text-center">You are not logged in</span>
                                         </li>
                                         <li>
-                                            <Link to="/login" className="btn btn-primary text-white">
+                                            <Link
+                                                to="/login"
+                                                className="btn btn-primary text-white"
+                                                onClick={() => document.getElementById('my-drawer-4')?.click()}
+                                            >
                                                 Login
                                             </Link>
                                         </li>
@@ -196,9 +226,14 @@ const Navbar = () => {
                                             <span className="text-center">You are not logged in</span>
                                         </li>
                                         <li>
-                                            <Link to="/login" className="btn btn-primary text-white">
+                                            <Link
+                                                to="/login"
+                                                className="btn btn-primary text-white"
+                                                onClick={() => document.getElementById('mobile-drawer')?.click()}
+                                            >
                                                 Login
                                             </Link>
+
                                         </li>
                                     </>
                                 )}

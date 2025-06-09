@@ -87,11 +87,14 @@ const MyBookings = () => {
   const chartData = Array.from(
     bookings.reduce((acc, cur) => {
       const model = cur.carModel || cur.model;
-      const price = parseFloat(cur.totalPrice || cur.pricePerDay);
+      const start = new Date(cur.startDate);
+      const end = new Date(cur.endDate);
+      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
+      const price = parseFloat(cur.pricePerDay || 0) * days;
       acc.set(model, (acc.get(model) || 0) + price);
       return acc;
     }, new Map()),
-    ([model, price]) => ({ model, price })
+    ([model, price]) => ({ model, price: Number(price.toFixed(2)) })
   );
 
   return (
@@ -103,15 +106,35 @@ const MyBookings = () => {
     >
       <h2 className="text-3xl font-bold mb-6 text-center">My Bookings</h2>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto space-y-7">
+        {/* Chart */}
+        {bookings.length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-2xl font-semibold mb-4 text-center">
+              Total Rental Price by Car Model
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="model" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="price" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
         <table className="table w-full border border-gray-300">
           <thead className="bg-base-200 text-sm text-left">
             <tr>
-              <th>Image</th>
               <th>Model</th>
               <th>Booking Date</th>
               <th>Total Price</th>
               <th>Status</th>
+              <th>Location</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -124,30 +147,33 @@ const MyBookings = () => {
                   } hover:shadow-md`}
                 whileHover={{ scale: 1.01 }}
               >
-                <td>
-                  <img
-                    src={booking.carImage}
-                    alt={booking.carModel}
-                    className="w-16 h-10 object-cover rounded"
-                  />
-                </td>
                 <td className="font-semibold">
                   {booking.carModel || booking.model}
                 </td>
                 <td>{new Date(booking.bookingDate).toLocaleString('en-GB')}</td>
-                <td>${booking.totalPrice || booking.pricePerDay}</td>
+                <td>
+                  {(() => {
+                    const start = new Date(booking.startDate);
+                    const end = new Date(booking.endDate);
+                    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
+                    const pricePerDay = parseFloat(booking.pricePerDay || 0);
+                    const total = (pricePerDay * days).toFixed(2);
+                    return `$${total} (${days} day${days > 1 ? 's' : ''})`;
+                  })()}
+                </td>
                 <td>
                   <span
                     className={`badge ${booking.status === 'Canceled'
-                        ? 'badge-error'
-                        : booking.status === 'Pending'
-                          ? 'badge-warning'
-                          : 'badge-success'
+                      ? 'badge-error'
+                      : booking.status === 'Pending'
+                        ? 'badge-warning'
+                        : 'badge-success'
                       }`}
                   >
                     {booking.status || 'Confirmed'}
                   </span>
                 </td>
+                <td>{booking.location}</td>
                 <td className="space-x-2">
                   <button
                     onClick={() => handleEdit(booking)}
@@ -200,6 +226,26 @@ const MyBookings = () => {
             className="input input-bordered w-full"
           />
 
+          {/* Total Price Preview */}
+          {startDate && endDate && selectedBooking?.pricePerDay && (
+            <div className="mt-4 p-3 rounded bg-base-200 text-sm text-gray-700">
+              {(() => {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
+                const pricePerDay = parseFloat(selectedBooking.pricePerDay || 0);
+                const total = (pricePerDay * days).toFixed(2);
+                return (
+                  <p>
+                    <strong>Total Days:</strong> {days} <br />
+                    <strong>Price per Day:</strong> ${pricePerDay} <br />
+                    <strong>Total Price:</strong> ${total}
+                  </p>
+                );
+              })()}
+            </div>
+          )}
+
           <div className="modal-action">
             <button onClick={handleUpdate} className="btn btn-primary">
               Save
@@ -211,26 +257,6 @@ const MyBookings = () => {
         </div>
       </dialog>
 
-      {/* Chart */}
-      {bookings.length > 0 && (
-        <div className="mt-12">
-          <h3 className="text-2xl font-semibold mb-4 text-center">
-            Total Rental Price by Car Model
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="model" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="price" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
     </motion.div>
   );
 };
