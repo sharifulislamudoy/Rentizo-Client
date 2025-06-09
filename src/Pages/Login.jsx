@@ -12,7 +12,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const Login = () => {
     useScrollToTop();
-    const { signIn } = useContext(AuthContext);
+    const { signIn, resetPassword } = useContext(AuthContext);
     const [error, setError] = useState('')
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,6 +47,43 @@ const Login = () => {
                 }
             });
     };
+
+    const handleForgetPassword = async () => {
+        const { value: email } = await Swal.fire({
+            title: 'Reset Password',
+            input: 'email',
+            inputLabel: 'Enter your email address',
+            inputPlaceholder: 'example@email.com',
+            confirmButtonText: 'Send Reset Link',
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please enter your email';
+                }
+            }
+        });
+
+        if (email) {
+            try {
+                await resetPassword(email);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reset link sent!',
+                    text: 'Check your email to reset your password.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: "#f0f9ff",
+                    color: "#0f172a",
+                });
+            } catch (error) {
+                toast.error(error.message);
+            }
+        }
+    };
+
 
 
     const handleGoogleLogin = async () => {
@@ -118,6 +155,16 @@ const Login = () => {
                     {error && (
                         <div className="text-error text-sm font-medium">{error}</div>
                     )}
+                    <p className="text-sm text-right mt-1">
+                        <button
+                            onClick={handleForgetPassword}
+                            type="button"
+                            className="text-primary hover:underline"
+                        >
+                            Forgot Password?
+                        </button>
+                    </p>
+
 
                     <button type="submit" className="btn btn-primary w-full">
                         Login

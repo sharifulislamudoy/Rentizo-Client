@@ -139,7 +139,7 @@ const Navbar = () => {
                         <div className="drawer-content">
                             <label htmlFor="my-drawer-4" className="cursor-pointer">
                                 <img
-                                    src={user?.photoURL || 'https://i.ibb.co/rH6jYwH/default-user.png'}
+                                    src={user?.photoURL || 'https://i.ibb.co/355KW86m/Untitled-design.jpg'}
                                     alt="Profile"
                                     className="w-10 h-10 rounded-full border-2 border-primary hover:scale-105 transition-transform"
                                 />
