@@ -38,21 +38,6 @@ const CarDetails = () => {
   }, [id]);
 
   const handleBooking = async (car) => {
-    if (!user) {
-      const result = await Swal.fire({
-        title: 'Login Required',
-        text: 'Please log in first to make your booking.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Login Now',
-        cancelButtonText: 'Cancel',
-      });
-
-      if (result.isConfirmed) {
-        navigate('/login'); // Or wherever your login route is
-      }
-      return; // Stop the function here
-    }
 
     const result = await Swal.fire({
       title: 'Confirm Booking',
@@ -102,6 +87,7 @@ const CarDetails = () => {
       }
     }
   };
+
 
 
 
@@ -166,7 +152,7 @@ const CarDetails = () => {
               {alreadyBooked ? 'Already Booked' : 'Book Now'}
             </button>
           ) : (
-            <p className="mt-6 text-red-600 font-semibold">Please login to book this car.</p>
+            <p className="mt-6 text-red-600 font-semibold">Please <a href='/login' className="link link-primary">Login</a> to book this car.</p>
           )}
 
         </motion.div>
