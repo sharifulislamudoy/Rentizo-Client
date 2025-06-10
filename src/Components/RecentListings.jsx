@@ -3,19 +3,6 @@ import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import moment from "moment";
 import { motion } from "framer-motion";
 
-const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: (i) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.1,
-            duration: 0.4,
-            ease: "easeOut",
-        },
-    }),
-};
-
 const RecentListings = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,13 +30,26 @@ const RecentListings = () => {
 
     const visibleCars = showAll ? cars : cars.slice(0, 6);
 
+    // Animation variants
+    const cardVariants = {
+        hidden: { opacity: 0, y: 50 },
+        visible: (i) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                delay: i * 0.1,
+                duration: 0.4,
+                ease: "easeOut",
+            },
+        }),
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: false, amount: 0.3 }}
-            className="px-4 py-8 my-3 w-full max-w-6xl mx-auto"
+            transition={{ duration: 0.6 }}
+            className="px-4 py-8 my-3 w-full max-w-6xl mx-auto overflow-x-hidden min-h-screen"
         >
             <h2 className="text-4xl md:text-5xl font-bold mb-12 font-poppins text-primary text-center">
                 Recent Listings
@@ -57,13 +57,12 @@ const RecentListings = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 bg-base-100">
                 {visibleCars.map((car, i) => (
                     <motion.div
-                        key={car._id}
+                        key={car._id || i}
                         custom={i}
                         initial="hidden"
-                        whileInView="visible"
+                        animate="visible"
                         variants={cardVariants}
                         className="bg-base-300 rounded-2xl overflow-hidden shadow hover:shadow-lg transform hover:scale-105 transition-all duration-300"
-                        viewport={{ once: false }}
                     >
                         <img
                             src={car.image}
@@ -94,14 +93,21 @@ const RecentListings = () => {
             </div>
 
             {cars.length > 6 && (
-                <div className="text-center mt-8">
-                    <button
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-center mt-8"
+                >
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setShowAll(!showAll)}
                         className="btn btn-primary"
                     >
                         {showAll ? "Show Less" : "See All"}
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             )}
         </motion.div>
     );
