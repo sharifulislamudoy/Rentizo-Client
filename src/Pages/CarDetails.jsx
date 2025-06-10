@@ -34,6 +34,22 @@ const CarDetails = () => {
   }, [id]);
 
   const handleBooking = async (car) => {
+    if (!user) {
+      const result = await Swal.fire({
+        title: 'Login Required',
+        text: 'Please log in first to make your booking.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Login Now',
+        cancelButtonText: 'Cancel',
+      });
+
+      if (result.isConfirmed) {
+        navigate('/login'); // Or wherever your login route is
+      }
+      return; // Stop the function here
+    }
+
     const result = await Swal.fire({
       title: 'Confirm Booking',
       html: `
@@ -54,7 +70,7 @@ const CarDetails = () => {
         location: car.location,
         userEmail: user?.email,
         userName: user?.displayName,
-        bookingDate: new Date(),
+        bookingDate: new Date().toISOString(),
       };
 
       try {
@@ -70,7 +86,6 @@ const CarDetails = () => {
           throw new Error('Failed to save booking');
         }
 
-        // ✅ Booking successful → increment booking count
         await fetch(`http://localhost:3000/bookings/${car._id}`, {
           method: 'PATCH',
         });
@@ -138,13 +153,18 @@ const CarDetails = () => {
             <p className="text-gray-700">{car.description}</p>
           </div>
 
-          <button
-            onClick={() => handleBooking(car)}
-            className="btn btn-primary mt-6"
-            disabled={alreadyBooked}
-          >
-            {alreadyBooked ? 'Already Booked' : 'Book Now'}
-          </button>
+          {user ? (
+            <button
+              onClick={() => handleBooking(car)}
+              className="btn btn-primary mt-6"
+              disabled={alreadyBooked}
+            >
+              {alreadyBooked ? 'Already Booked' : 'Book Now'}
+            </button>
+          ) : (
+            <p className="mt-6 text-red-600 font-semibold">Please login to book this car.</p>
+          )}
+
         </motion.div>
       </div>
     </motion.div>
