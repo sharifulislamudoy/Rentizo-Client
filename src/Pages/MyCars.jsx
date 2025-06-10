@@ -16,7 +16,11 @@ const MyCars = () => {
   // Fetch user's cars
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/cars?email=${user.email}`)
+      fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
+        headers: {
+          authorization: `Bearer ${user.accessToken}`
+        }
+      })
         .then((res) => res.json())
         .then((data) => {
           let sortedData = [...data];
@@ -34,6 +38,7 @@ const MyCars = () => {
         .catch(() => toast.error('Failed to load your cars. Please try again later.'));
     }
   }, [user, sortOption]);
+
 
   // Handle update
   const handleUpdate = async (e) => {

@@ -16,6 +16,7 @@ import {
 
 const MyBookings = () => {
   const { user } = useContext(AuthContext);
+  console.log(user)
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [startDate, setStartDate] = useState('');
@@ -23,7 +24,11 @@ const MyBookings = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/bookings?email=${user.email}`)
+      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
+        headers : {
+          authorization: `Bearer ${user.accessToken}`
+        }
+      })
         .then((res) => res.json())
         .then((data) => setBookings(data));
     }
