@@ -6,9 +6,9 @@ import { AuthContext } from '../Provider/AuthProvider';
 import useScrollToTop from '../Utils/UseScrollToTop';
 
 const AddCar = () => {
-    useScrollToTop();
+  useScrollToTop();
   const navigate = useNavigate();
-const {user} = useContext(AuthContext)
+  const { user } = useContext(AuthContext)
   const [loading, setLoading] = useState(false);
 
   const handleAddCar = async (e) => {
