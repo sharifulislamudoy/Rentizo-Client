@@ -13,9 +13,11 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import LoadingSpinner from '../Utils/LoadingSpinner';
 
 const MyBookings = () => {
   const { user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true)
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [startDate, setStartDate] = useState('');
@@ -31,8 +33,13 @@ const MyBookings = () => {
       })
         .then((res) => res.json())
         .then((data) => setBookings(data));
+        setLoading(false);
     }
   }, [user?.email]);
+
+  if(loading){
+    return <LoadingSpinner />
+  }
 
   const handleCancel = async (id) => {
     const confirm = await Swal.fire({

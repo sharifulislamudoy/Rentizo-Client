@@ -5,11 +5,13 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router';
 import { AuthContext } from '../Provider/AuthProvider';
 import useScrollToTop from '../Utils/UseScrollToTop';
+import LoadingSpinner from '../Utils/LoadingSpinner';
 
 const MyCars = () => {
   useScrollToTop();
   const { user } = useContext(AuthContext);
   const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true)
   const [editingCar, setEditingCar] = useState(null);
   const [sortOption, setSortOption] = useState('');
 
@@ -32,10 +34,15 @@ const MyCars = () => {
             sortedData.sort((a, b) => b.pricePerDay - a.pricePerDay);
           }
           setCars(sortedData);
+          setLoading(false);
         })
         .catch(() => toast.error('Failed to load your cars. Please try again later.'));
     }
   }, [user, sortOption]);
+
+  if(loading){
+    return <LoadingSpinner />
+  }
 
 
 
