@@ -40,7 +40,7 @@ const MyCars = () => {
     }
   }, [user, sortOption]);
 
-  if(loading){
+  if (loading) {
     return <LoadingSpinner />
   }
 
@@ -72,8 +72,9 @@ const MyCars = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:3000/cars/${editingCar._id}`, {
+        const res = await fetch(`http://localhost:3000/cars/${editingCar._id}?email=${user?.email}`, {
           method: 'PATCH',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatedCar),
         });
@@ -107,8 +108,9 @@ const MyCars = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:3000/cars/${id}`, {
+          const res = await fetch(`http://localhost:3000/cars/${id}?email=${user?.email}`, {
             method: 'DELETE',
+            credentials:'include',
           });
           if (res.ok) {
             setCars((prev) => prev.filter((car) => car._id !== id));

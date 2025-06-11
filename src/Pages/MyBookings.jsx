@@ -52,8 +52,9 @@ const MyBookings = () => {
 
     if (confirm.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:3000/bookings/${id}`, {
+        const res = await fetch(`http://localhost:3000/bookings/${id}?email=${user?.email}`, {
           method: 'DELETE',
+          credentials: 'include',
         });
 
         if (res.ok) {
@@ -76,8 +77,9 @@ const MyBookings = () => {
   };
 
   const handleUpdate = async () => {
-    const res = await fetch(`http://localhost:3000/bookings/${selectedBooking._id}`, {
+    const res = await fetch(`http://localhost:3000/bookings/${selectedBooking._id}?email=${user?.email}`, {
       method: 'PATCH',
+      credentials:'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ startDate, endDate }),
     });

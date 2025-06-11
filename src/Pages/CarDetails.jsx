@@ -61,8 +61,9 @@ const CarDetails = () => {
       };
 
       try {
-        const response = await fetch('http://localhost:3000/bookings', {
+        const response = await fetch(`http://localhost:3000/bookings?email=${user?.email}`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },

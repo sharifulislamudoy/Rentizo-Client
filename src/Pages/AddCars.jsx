@@ -44,8 +44,9 @@ const AddCar = () => {
     };
 
     try {
-      const res = await fetch('http://localhost:3000/cars', {
+      const res = await fetch(`http://localhost:3000/cars?email=${user?.email}`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCar),
       });
