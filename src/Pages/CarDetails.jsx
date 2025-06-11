@@ -75,7 +75,7 @@ const CarDetails = () => {
           throw new Error('Failed to save booking');
         }
 
-        await fetch(`http://localhost:3000/bookings/${car._id}`, {
+        await fetch(`http://localhost:3000/bookings/${car._id}/increment`, {
           method: 'PATCH',
         });
 
