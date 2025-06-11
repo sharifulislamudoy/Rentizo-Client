@@ -18,9 +18,7 @@ const CarDetails = () => {
   useEffect(() => {
     if (user?.email) {
       fetch(`http://localhost:3000/bookings?email=${user.email}`, {
-        headers: {
-          authorization: `Bearer ${user.accessToken}`
-        }
+        credentials: 'include'
       })
         .then(res => res.json())
         .then(data => setUserBookings(data));

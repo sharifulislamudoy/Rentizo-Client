@@ -17,9 +17,7 @@ const MyCars = () => {
   useEffect(() => {
     if (user?.email) {
       fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
-        headers: {
-          authorization: `Bearer ${user.accessToken}`
-        }
+        credentials: 'include'
       })
         .then((res) => res.json())
         .then((data) => {

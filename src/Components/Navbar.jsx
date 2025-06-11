@@ -5,6 +5,7 @@ import { useContext, useState } from 'react';
 import ThemeToggle from '../Utils/ThemeToggle';
 import { AuthContext } from '../Provider/AuthProvider';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const listVariants = {
     initial: {},
@@ -73,9 +74,15 @@ const Navbar = () => {
 
         if (result.isConfirmed) {
             try {
+                // Call backend logout endpoint
+                await axios.post('http://localhost:3000/logout', {}, { withCredentials: true });
+
+                // Firebase logout
                 await logOut();
+
                 Swal.fire('Logged out!', 'You have been logged out.', 'success');
-                // Close drawers
+
+                // Close drawers (optional)
                 document.getElementById('my-drawer-4')?.click();
                 document.getElementById('mobile-drawer')?.click();
             } catch (error) {
@@ -84,6 +91,7 @@ const Navbar = () => {
             }
         }
     };
+
 
 
 
@@ -139,7 +147,7 @@ const Navbar = () => {
                         <div className="drawer-content">
                             <label htmlFor="my-drawer-4" className="cursor-pointer">
                                 <img
-                                    src={user?.photoURL || 'https://i.ibb.co/355KW86m/Untitled-design.jpg'}
+                                    src={user?.photoURL || 'https://i.ibb.co/BVHW9x0W/Untitled-design-77.png'}
                                     alt="Profile"
                                     className="w-10 h-10 rounded-full border-2 border-primary hover:scale-105 transition-transform"
                                 />
