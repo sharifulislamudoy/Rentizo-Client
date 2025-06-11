@@ -152,7 +152,7 @@ const AvailableCars = () => {
                 animate="visible"
                 exit="exit"
                 whileHover={{ scale: 1.02, boxShadow: '0px 4px 15px rgba(0,0,0,0.1)' }}
-                className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg shadow bg-white transition-transform duration-300"
+                className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg shadow bg-base-100 transition-transform duration-300"
               >
                 <img src={car.image} alt={car.carModel} className="w-full md:w-48 h-36 object-cover rounded" />
                 <div className="flex-1">
