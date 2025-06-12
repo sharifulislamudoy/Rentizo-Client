@@ -4,21 +4,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useScrollToTop from '../Utils/UseScrollToTop';
 
 const AvailableCars = () => {
-  useScrollToTop();
-  const [cars, setCars] = useState([]);
-  const [view, setView] = useState('grid');
-  const [sortBy, setSortBy] = useState('newest');
-  const [searchTerm, setSearchTerm] = useState('');
+  useScrollToTop(); // Scroll to top when component mounts
 
+  // State to store cars, view mode, sorting option, and search term
+  const [cars, setCars] = useState([]);
+  const [view, setView] = useState('grid'); // grid or list view
+  const [sortBy, setSortBy] = useState('newest'); // sorting criteria
+  const [searchTerm, setSearchTerm] = useState(''); // search input
+
+  // Fetch cars data from server on component mount
   useEffect(() => {
-    fetch('http://localhost:3000/cars/')
+    fetch('https://rentizo-server.vercel.app/cars/')
       .then((res) => res.json())
       .then((data) => {
+        // Filter to show only available cars
         const availableCars = data.filter(car => car.availability === "Available");
         setCars(availableCars);
       });
   }, []);
 
+  // Sort cars based on selected sort option
   const sortCars = (cars) => {
     const sorted = [...cars];
     if (sortBy === 'newest') {
@@ -33,6 +38,7 @@ const AvailableCars = () => {
     return sorted;
   };
 
+  // Filter cars by search term matching model or location
   const filteredCars = cars.filter((car) => {
     const search = searchTerm.toLowerCase();
     return (
@@ -41,14 +47,17 @@ const AvailableCars = () => {
     );
   });
 
+  // Sort the filtered cars
   const sortedCars = sortCars(filteredCars);
 
+  // Animation variants for individual car cards
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
     exit: { opacity: 0, y: 30, transition: { duration: 0.2 } },
   };
 
+  // Animation variant for container to stagger children animations
   const containerVariants = {
     hidden: {},
     visible: {
@@ -64,9 +73,12 @@ const AvailableCars = () => {
       animate={{ opacity: 1 }}
       className="p-4 min-h-screen w-11/12 mx-auto"
     >
+      {/* Header with title, search, sort, and view toggles */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <h2 className="text-3xl font-bold">Available Cars</h2>
+
         <div className="flex items-center gap-2">
+          {/* Search input */}
           <input
             type="text"
             placeholder="Search by model, Location"
@@ -74,6 +86,8 @@ const AvailableCars = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+
+          {/* Sort dropdown */}
           <select
             className="select select-bordered"
             value={sortBy}
@@ -84,6 +98,8 @@ const AvailableCars = () => {
             <option value="low-price">Price (Lowest)</option>
             <option value="high-price">Price (Highest)</option>
           </select>
+
+          {/* View toggle buttons */}
           <button
             className={`btn ${view === 'grid' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setView('grid')}
@@ -99,6 +115,7 @@ const AvailableCars = () => {
         </div>
       </div>
 
+      {/* Show cars in grid or list view with animation */}
       {view === 'grid' ? (
         <motion.div
           className="grid md:grid-cols-3 gap-6"

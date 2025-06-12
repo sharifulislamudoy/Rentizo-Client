@@ -16,31 +16,35 @@ import {
 import LoadingSpinner from '../Utils/LoadingSpinner';
 
 const MyBookings = () => {
-  const { user } = useContext(AuthContext);
-  const [loading, setLoading] = useState(true)
+  const { user } = useContext(AuthContext); // Get logged-in user info from context
+
+  // State to manage loading, bookings list, selected booking, and date inputs for editing
+  const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // Fetch bookings when user email is available
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
-        // headers : {
-        //   authorization: `Bearer ${user.accessToken}`
-        // },
-        credentials: 'include'
+      fetch(`https://rentizo-server.vercel.app/bookings?email=${user.email}`, {
+        credentials: 'include', // send cookies for authentication if any
       })
         .then((res) => res.json())
-        .then((data) => setBookings(data));
-        setLoading(false);
+        .then((data) => {
+          setBookings(data);
+          setLoading(false); // stop loading after data is fetched
+        });
     }
   }, [user?.email]);
 
-  if(loading){
-    return <LoadingSpinner />
+  // Show loading spinner while fetching bookings
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
+  // Handle booking cancellation with confirmation popup
   const handleCancel = async (id) => {
     const confirm = await Swal.fire({
       title: 'Are you sure you want to cancel this booking?',
@@ -52,23 +56,28 @@ const MyBookings = () => {
 
     if (confirm.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:3000/bookings/${id}?email=${user?.email}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
+        const res = await fetch(
+          `https://rentizo-server.vercel.app/bookings/${id}?email=${user?.email}`,
+          {
+            method: 'DELETE',
+            credentials: 'include',
+          }
+        );
 
         if (res.ok) {
+          // Remove cancelled booking from UI list
           setBookings(bookings.filter((b) => b._id !== id));
           toast.success('Booking cancelled successfully!');
         } else {
           toast.error('Failed to cancel booking.');
         }
-      } catch (error) {
+      } catch {
         toast.error('Error cancelling booking.');
       }
     }
   };
 
+  // Open modal and pre-fill date inputs for editing a booking
   const handleEdit = (booking) => {
     setSelectedBooking(booking);
     setStartDate(booking.startDate?.split('T')[0] || '');
@@ -76,19 +85,22 @@ const MyBookings = () => {
     document.getElementById('edit_modal').showModal();
   };
 
+  // Update booking dates on server and update UI list
   const handleUpdate = async () => {
-    const res = await fetch(`http://localhost:3000/bookings/${selectedBooking._id}?email=${user?.email}`, {
-      method: 'PATCH',
-      credentials:'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startDate, endDate }),
-    });
+    const res = await fetch(
+      `https://rentizo-server.vercel.app/bookings/${selectedBooking._id}?email=${user?.email}`,
+      {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startDate, endDate }),
+      }
+    );
 
     if (res.ok) {
+      // Update booking info locally in the list
       const updated = bookings.map((b) =>
-        b._id === selectedBooking._id
-          ? { ...b, startDate, endDate }
-          : b
+        b._id === selectedBooking._id ? { ...b, startDate, endDate } : b
       );
       setBookings(updated);
       toast.success('Booking updated!');
@@ -98,11 +110,13 @@ const MyBookings = () => {
     }
   };
 
+  // Prepare data for bar chart showing total rental price by car model
   const chartData = Array.from(
     bookings.reduce((acc, cur) => {
       const model = cur.carModel || cur.model;
       const start = new Date(cur.startDate);
       const end = new Date(cur.endDate);
+      // Calculate days booked, minimum 1
       const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
       const price = parseFloat(cur.pricePerDay || 0) * days;
       acc.set(model, (acc.get(model) || 0) + price);
@@ -121,7 +135,7 @@ const MyBookings = () => {
       <h2 className="text-3xl font-bold mb-6 text-center">My Bookings</h2>
 
       <div className="overflow-x-auto space-y-7">
-        {/* Chart */}
+        {/* Display bar chart if there are bookings */}
         {bookings.length > 0 && (
           <div className="mt-12">
             <h3 className="text-2xl font-semibold mb-4 text-center">
@@ -141,6 +155,8 @@ const MyBookings = () => {
             </ResponsiveContainer>
           </div>
         )}
+
+        {/* Bookings Table */}
         <table className="table w-full border border-gray-300">
           <thead className="bg-base-200 text-sm text-left">
             <tr>
@@ -169,7 +185,8 @@ const MyBookings = () => {
                   {(() => {
                     const start = new Date(booking.startDate);
                     const end = new Date(booking.endDate);
-                    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
+                    const days =
+                      Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
                     const pricePerDay = parseFloat(booking.pricePerDay || 0);
                     const total = (pricePerDay * days).toFixed(2);
                     return `$${total} (${days} day${days > 1 ? 's' : ''})`;
@@ -178,10 +195,10 @@ const MyBookings = () => {
                 <td>
                   <span
                     className={`badge ${booking.status === 'Canceled'
-                      ? 'badge-error'
-                      : booking.status === 'Pending'
-                        ? 'badge-warning'
-                        : 'badge-success'
+                        ? 'badge-error'
+                        : booking.status === 'Pending'
+                          ? 'badge-warning'
+                          : 'badge-success'
                       }`}
                   >
                     {booking.status || 'Confirmed'}
@@ -208,6 +225,7 @@ const MyBookings = () => {
           </tbody>
         </table>
 
+        {/* Show message if no bookings */}
         {bookings.length === 0 && (
           <p className="text-center mt-8 text-gray-500">
             You have no bookings yet.
@@ -215,7 +233,7 @@ const MyBookings = () => {
         )}
       </div>
 
-      {/* Modal for Date Update */}
+      {/* Modal for Editing Booking Dates */}
       <dialog id="edit_modal" className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg mb-4">Modify Booking Dates</h3>
@@ -240,13 +258,14 @@ const MyBookings = () => {
             className="input input-bordered w-full"
           />
 
-          {/* Total Price Preview */}
+          {/* Show total price preview based on selected dates */}
           {startDate && endDate && selectedBooking?.pricePerDay && (
             <div className="mt-4 p-3 rounded bg-base-200 text-sm text-gray-700">
               {(() => {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
-                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
+                const days =
+                  Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
                 const pricePerDay = parseFloat(selectedBooking.pricePerDay || 0);
                 const total = (pricePerDay * days).toFixed(2);
                 return (
@@ -270,7 +289,6 @@ const MyBookings = () => {
           </div>
         </div>
       </dialog>
-
     </motion.div>
   );
 };

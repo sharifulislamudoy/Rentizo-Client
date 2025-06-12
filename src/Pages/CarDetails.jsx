@@ -6,18 +6,23 @@ import useScrollToTop from '../Utils/UseScrollToTop';
 import { AuthContext } from '../Provider/AuthProvider';
 
 const CarDetails = () => {
-  useScrollToTop();
-  const { user } = useContext(AuthContext)
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [car, setCar] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [userBookings, setUserBookings] = useState([]);
+  useScrollToTop(); // Scroll to top on component load
+
+  const { user } = useContext(AuthContext); // Get current user from context
+  const navigate = useNavigate(); // For programmatic navigation
+  const { id } = useParams(); // Get car ID from URL params
+
+  const [car, setCar] = useState(null); // Car data state
+  const [loading, setLoading] = useState(true); // Loading state
+  const [userBookings, setUserBookings] = useState([]); // User's existing bookings
+
+  // Check if user already booked this car
   const alreadyBooked = userBookings.some(booking => booking.carId === id);
 
+  // Fetch user bookings when user changes (to check if they already booked)
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
+      fetch(`https://rentizo-server.vercel.app/bookings?email=${user.email}`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -25,9 +30,9 @@ const CarDetails = () => {
     }
   }, [user]);
 
-
+  // Fetch car details by ID from backend
   useEffect(() => {
-    fetch(`http://localhost:3000/cars/${id}`)
+    fetch(`https://rentizo-server.vercel.app/cars/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCar(data);
@@ -35,20 +40,22 @@ const CarDetails = () => {
       });
   }, [id]);
 
+  // Handle booking process after user confirmation
   const handleBooking = async (car) => {
-
+    // Show confirmation popup with car details
     const result = await Swal.fire({
       title: 'Confirm Booking',
       html: `
-      <p><strong>Car:</strong> ${car.carModel}</p>
-      <p><strong>Price/Day:</strong> $${car.pricePerDay}</p>
-      <p><strong>Location:</strong> ${car.location}</p>
-    `,
+        <p><strong>Car:</strong> ${car.carModel}</p>
+        <p><strong>Price/Day:</strong> $${car.pricePerDay}</p>
+        <p><strong>Location:</strong> ${car.location}</p>
+      `,
       icon: 'info',
       showCancelButton: true,
       confirmButtonText: 'Confirm',
     });
 
+    // If user confirms booking
     if (result.isConfirmed) {
       const bookingInfo = {
         carId: car._id,
@@ -61,7 +68,8 @@ const CarDetails = () => {
       };
 
       try {
-        const response = await fetch(`http://localhost:3000/bookings?email=${user?.email}`, {
+        // Save booking info to server
+        const response = await fetch(`https://rentizo-server.vercel.app/bookings?email=${user?.email}`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -74,10 +82,12 @@ const CarDetails = () => {
           throw new Error('Failed to save booking');
         }
 
-        await fetch(`http://localhost:3000/bookings/${car._id}/increment`, {
+        // Increment car's booking count or availability on backend
+        await fetch(`https://rentizo-server.vercel.app/bookings/${car._id}/increment`, {
           method: 'PATCH',
         });
 
+        // Notify user of successful booking and redirect to "My Bookings"
         await Swal.fire('Booked!', 'Your booking has been confirmed.', 'success');
         navigate('/my-bookings');
       } catch (error) {
@@ -87,10 +97,7 @@ const CarDetails = () => {
     }
   };
 
-
-
-
-
+  // Show loading indicator while data is loading
   if (loading) {
     return <div className="text-center py-20">Loading...</div>;
   }
@@ -103,7 +110,8 @@ const CarDetails = () => {
       className="p-6 max-w-5xl mx-auto"
     >
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Car image animation from Y-axis */}
+
+        {/* Car image with animation */}
         <motion.img
           src={car.image}
           alt={car.carModel}
@@ -113,7 +121,7 @@ const CarDetails = () => {
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
 
-        {/* Car details animation from X-axis */}
+        {/* Car details with animation */}
         <motion.div
           initial={{ x: 100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -128,6 +136,7 @@ const CarDetails = () => {
             <strong>Listed by:</strong> {car.addedBy?.name} ({car.addedBy?.email})
           </p>
 
+          {/* Features list */}
           <div className="mt-4">
             <h4 className="font-semibold mb-1">Features:</h4>
             <ul className="list-disc list-inside text-gray-700">
@@ -137,11 +146,13 @@ const CarDetails = () => {
             </ul>
           </div>
 
+          {/* Car description */}
           <div className="mt-6">
             <h4 className="font-semibold mb-1">Description:</h4>
             <p className="text-gray-700">{car.description}</p>
           </div>
 
+          {/* Booking button or login prompt */}
           {user ? (
             <button
               onClick={() => handleBooking(car)}
@@ -151,13 +162,14 @@ const CarDetails = () => {
               {alreadyBooked ? 'Already Booked' : 'Book Now'}
             </button>
           ) : (
-            <p className="mt-6 text-red-600 font-semibold">Please <a href='/login' className="link link-primary">Login</a> to book this car.</p>
+            <p className="mt-6 text-red-600 font-semibold">
+              Please <a href='/login' className="link link-primary">Login</a> to book this car.
+            </p>
           )}
 
         </motion.div>
       </div>
     </motion.div>
-
   );
 };
 

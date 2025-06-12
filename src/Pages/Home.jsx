@@ -6,16 +6,18 @@ import WhyChooseUs from '../Components/WhyChooseUs';
 import useScrollToTop from '../Utils/UseScrollToTop';
 
 const Home = () => {
-    useScrollToTop();
-    return (
-        <div>
-            <Banner />
-            <WhyChooseUs />
-            <RecentListings />
-            <LuxuryExperienceSection />
-            <SpecialOffers />
-        </div>
-    );
+  useScrollToTop(); // Scroll to top when this page loads
+
+  return (
+    <div>
+      {/* Main sections of the homepage */}
+      <Banner />
+      <WhyChooseUs />
+      <RecentListings />
+      <LuxuryExperienceSection />
+      <SpecialOffers />
+    </div>
+  );
 };
 
 export default Home;

@@ -5,6 +5,7 @@ import errorAnimation from '../assets/error.json';
 
 const ErrorPage = () => {
     return (
+        // Container with fade-in animation and centered content
         <motion.div
             className="min-h-screen flex flex-col items-center justify-center bg-base-200 px-6 text-center"
             initial={{ opacity: 0 }}
@@ -12,12 +13,14 @@ const ErrorPage = () => {
             transition={{ duration: 0.5 }}
         >
             <div className="max-w-md w-full">
+                {/* Animated Lottie error illustration */}
                 <Lottie
                     animationData={errorAnimation}
                     loop
                     className="w-full max-w-xs mx-auto"
                 />
 
+                {/* Animated heading for error message */}
                 <motion.h1
                     className="text-4xl font-bold text-primary mb-4"
                     initial={{ y: -20, opacity: 0 }}
@@ -27,6 +30,7 @@ const ErrorPage = () => {
                     Oops! Page Not Found
                 </motion.h1>
 
+                {/* Animated descriptive paragraph */}
                 <motion.p
                     className="text-gray-500 mb-6"
                     initial={{ y: 20, opacity: 0 }}
@@ -36,6 +40,7 @@ const ErrorPage = () => {
                     The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
                 </motion.p>
 
+                {/* Animated button to navigate back to homepage */}
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}

@@ -11,14 +11,17 @@ import { FcGoogle } from 'react-icons/fc';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const Login = () => {
-    useScrollToTop();
-    const { signIn, resetPassword } = useContext(AuthContext);
-    const [error, setError] = useState('')
+    useScrollToTop(); // Scroll page to top on component mount
+
+    const { signIn, resetPassword } = useContext(AuthContext); // Get auth functions from context
+    const [error, setError] = useState(''); // For displaying login errors
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || '/'
-    const [showPassword, setShowPassword] = useState(false);
+    const from = location.state?.from?.pathname || '/'; // Redirect after login, default to home
 
+    const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
+
+    // Handle form submission for login
     const handleLogin = e => {
         e.preventDefault();
         const form = e.target;
@@ -27,6 +30,7 @@ const Login = () => {
 
         signIn(email, password)
             .then(() => {
+                // Show success toast popup on successful login
                 Swal.fire({
                     title: "Login Successfully!",
                     icon: "success",
@@ -38,16 +42,26 @@ const Login = () => {
                     background: "#f0f9ff",
                     color: "#0f172a",
                 });
-                navigate(from, { replace: true });
+
+                setError(""); // Clear previous error messages
+                form.reset(); // Clear the form inputs
+                navigate(from, { replace: true }); // Redirect user after login
             })
             .catch((error) => {
-                if (error) {
-                    setError(error)
-                    toast.error("Password Wrong")
-                }
+                // Handle different error codes and show user-friendly messages
+                const errorCode = error?.code || '';
+                const errorMessageMap = {
+                    "auth/user-not-found": "No user found with this email.",
+                    "auth/wrong-password": "Incorrect password. Please try again.",
+                    "auth/too-many-requests": "Access temporarily disabled due to many failed login attempts. Try again later.",
+                    "auth/invalid-email": "Please enter a valid email address.",
+                };
+                const errorMessage = errorMessageMap[errorCode] || "Login failed. Please try again later.";
+                setError(errorMessage);
             });
     };
 
+    // Handle forgot password flow using SweetAlert input
     const handleForgetPassword = async () => {
         const { value: email } = await Swal.fire({
             title: 'Reset Password',
@@ -65,7 +79,7 @@ const Login = () => {
 
         if (email) {
             try {
-                await resetPassword(email);
+                await resetPassword(email); // Send password reset email
                 Swal.fire({
                     icon: 'success',
                     title: 'Reset link sent!',
@@ -79,13 +93,12 @@ const Login = () => {
                     color: "#0f172a",
                 });
             } catch (error) {
-                toast.error(error.message);
+                toast.error(error.message); // Show error if reset fails
             }
         }
     };
 
-
-
+    // Handle Google sign-in using Firebase popup
     const handleGoogleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
@@ -101,11 +114,10 @@ const Login = () => {
                     background: "#f0f9ff",
                     color: "#0f172a",
                 });
-                navigate('/');
+                navigate('/'); // Redirect to home after login
             }
         } catch (error) {
-            console.error("Google Login Error:", error.message);
-            toast.error(`Can't sign in: ${error.message}`);
+            toast.error(`Can't sign in: ${error.message}`); // Show error message
         }
     };
 
@@ -119,6 +131,7 @@ const Login = () => {
             >
                 <h2 className="text-3xl font-bold text-center mb-6 text-primary">Login to Rentizo</h2>
 
+                {/* Login form */}
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
                         <label className="label" htmlFor="email">Email</label>
@@ -127,6 +140,7 @@ const Login = () => {
                             type="email"
                             required
                             className="input input-bordered w-full"
+                            onChange={() => setError('')} // Clear error on input change
                         />
                     </div>
 
@@ -135,10 +149,12 @@ const Login = () => {
                         <div className="relative">
                             <input
                                 name="password"
-                                type={showPassword ? "text" : "password"}
+                                type={showPassword ? "text" : "password"} // Show/hide password
                                 required
-                                className="input input-bordered w-full pr-12" // Make sure enough padding on right
+                                className="input input-bordered w-full pr-12"
+                                onChange={() => setError('')} // Clear error on input change
                             />
+                            {/* Toggle password visibility button */}
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
@@ -150,11 +166,12 @@ const Login = () => {
                         </div>
                     </div>
 
-
-
+                    {/* Show error messages */}
                     {error && (
                         <div className="text-error text-sm font-medium">{error}</div>
                     )}
+
+                    {/* Forgot password link */}
                     <p className="text-sm text-right mt-1">
                         <button
                             onClick={handleForgetPassword}
@@ -165,7 +182,7 @@ const Login = () => {
                         </button>
                     </p>
 
-
+                    {/* Submit login button */}
                     <button type="submit" className="btn btn-primary w-full">
                         Login
                     </button>
@@ -173,6 +190,7 @@ const Login = () => {
 
                 <div className="divider my-4">OR</div>
 
+                {/* Google login button */}
                 <button
                     onClick={handleGoogleLogin}
                     className="btn btn-outline w-full flex items-center justify-center gap-2"
@@ -181,6 +199,7 @@ const Login = () => {
                     Continue with Google
                 </button>
 
+                {/* Link to registration page */}
                 <p className="mt-4 text-center text-sm">
                     Don't have an account?{' '}
                     <Link to="/register" className="text-primary font-semibold hover:underline">
