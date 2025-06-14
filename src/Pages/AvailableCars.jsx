@@ -4,26 +4,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useScrollToTop from '../Utils/UseScrollToTop';
 
 const AvailableCars = () => {
-  useScrollToTop(); // Scroll to top when component mounts
+  useScrollToTop();
 
-  // State to store cars, view mode, sorting option, and search term
-  const [cars, setCars] = useState([]);
-  const [view, setView] = useState('grid'); // grid or list view
-  const [sortBy, setSortBy] = useState('newest'); // sorting criteria
-  const [searchTerm, setSearchTerm] = useState(''); // search input
+  const [allCars, setAllCars] = useState([]);
+  const [availableCars, setAvailableCars] = useState([]);
+  const [view, setView] = useState('grid');
+  const [sortBy, setSortBy] = useState('newest');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch cars data from server on component mount
   useEffect(() => {
     fetch('https://rentizo-server.vercel.app/cars/')
       .then((res) => res.json())
       .then((data) => {
-        // Filter to show only available cars
-        const availableCars = data.filter(car => car.availability === "Available");
-        setCars(availableCars);
+        setAllCars(data);
+        const available = data.filter(car => car.availability === "Available");
+        setAvailableCars(available);
       });
   }, []);
 
-  // Sort cars based on selected sort option
   const sortCars = (cars) => {
     const sorted = [...cars];
     if (sortBy === 'newest') {
@@ -38,8 +36,7 @@ const AvailableCars = () => {
     return sorted;
   };
 
-  // Filter cars by search term matching model or location
-  const filteredCars = cars.filter((car) => {
+  const filteredCars = availableCars.filter((car) => {
     const search = searchTerm.toLowerCase();
     return (
       car.carModel.toLowerCase().includes(search) ||
@@ -47,17 +44,14 @@ const AvailableCars = () => {
     );
   });
 
-  // Sort the filtered cars
   const sortedCars = sortCars(filteredCars);
 
-  // Animation variants for individual car cards
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
     exit: { opacity: 0, y: 30, transition: { duration: 0.2 } },
   };
 
-  // Animation variant for container to stagger children animations
   const containerVariants = {
     hidden: {},
     visible: {
@@ -73,12 +67,17 @@ const AvailableCars = () => {
       animate={{ opacity: 1 }}
       className="p-4 min-h-screen w-11/12 mx-auto"
     >
-      {/* Header with title, search, sort, and view toggles */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-        <h2 className="text-3xl font-bold">Available Cars</h2>
+        <div>
+          <h2 className="text-3xl font-bold">Available Cars</h2>
+          <div className="flex items-center gap-2 mt-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium w-fit">
+            <span className="status status-info animate-bounce w-2 h-2 rounded-full"></span>
+            {availableCars.length} / {allCars.length} Cars Available
+          </div>
+        </div>
 
-        <div className="flex items-center gap-2">
-          {/* Search input */}
+        <div className="flex flex-col md:flex-row items-center gap-4">
           <input
             type="text"
             placeholder="Search by model, Location"
@@ -87,7 +86,6 @@ const AvailableCars = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          {/* Sort dropdown */}
           <select
             className="select select-bordered"
             value={sortBy}
@@ -99,23 +97,24 @@ const AvailableCars = () => {
             <option value="high-price">Price (Highest)</option>
           </select>
 
-          {/* View toggle buttons */}
-          <button
-            className={`btn ${view === 'grid' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setView('grid')}
-          >
-            Grid
-          </button>
-          <button
-            className={`btn ${view === 'list' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setView('list')}
-          >
-            List
-          </button>
+          {/* Toggle for Grid/List */}
+          <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-fit border p-2">
+            <legend className="fieldset-legend text-sm">Layout View</legend>
+            <label className="label cursor-pointer gap-2">
+              <span className="label-text text-sm font-medium">List</span>
+              <input
+                type="checkbox"
+                className="toggle"
+                checked={view === 'grid'}
+                onChange={() => setView(view === 'grid' ? 'list' : 'grid')}
+              />
+              <span className="label-text text-sm font-medium">Grid</span>
+            </label>
+          </fieldset>
         </div>
       </div>
 
-      {/* Show cars in grid or list view with animation */}
+      {/* Cars */}
       {view === 'grid' ? (
         <motion.div
           className="grid md:grid-cols-3 gap-6"
