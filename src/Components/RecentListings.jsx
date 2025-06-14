@@ -91,9 +91,6 @@ const RecentListings = () => {
                                         </span>
                                     )}
                                 </p>
-                                <div className="card-actions justify-end">
-                                    <button className="btn btn-primary">Book Now</button>
-                                </div>
                             </div>
                         </div>
                     </motion.div>
