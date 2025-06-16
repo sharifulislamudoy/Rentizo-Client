@@ -59,7 +59,7 @@ const Navbar = () => {
         if (result.isConfirmed) {
             try {
                 // Call backend logout endpoint to clear session or cookies
-                await axios.post('https://rentizo-server.vercel.app/logout', {}, { withCredentials: true });
+                await axios.post('https://server-car-rental.vercel.app/logout', {}, { withCredentials: true });
 
                 // Logout from Firebase auth
                 await logOut();

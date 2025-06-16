@@ -4,7 +4,6 @@ import {
   onAuthStateChanged, 
   sendPasswordResetEmail, 
   signInWithEmailAndPassword, 
-  signInWithPopup, 
   signOut, 
   updateProfile 
 } from 'firebase/auth';
@@ -61,7 +60,7 @@ const AuthProvider = ({ children }) => {
             // If user is logged in, request a JWT token from server
             if (currentUser?.email) {
                 const userData = { email: currentUser.email };
-                axios.post('https://rentizo-server.vercel.app/jwt', userData, {
+                axios.post('https://server-car-rental.vercel.app/jwt', userData, {
                     withCredentials: true // send cookies if any
                 })
                 .then(res => {

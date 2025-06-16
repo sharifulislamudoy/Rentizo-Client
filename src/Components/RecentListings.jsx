@@ -10,7 +10,7 @@ const RecentListings = () => {
     const carsPerPage = 6;
 
     useEffect(() => {
-        fetch("https://rentizo-server.vercel.app/cars/")
+        fetch("https://server-car-rental.vercel.app/cars/")
             .then((res) => res.json())
             .then((data) => {
                 const sorted = data.sort(

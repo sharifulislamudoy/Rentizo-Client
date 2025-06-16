@@ -13,7 +13,7 @@ const AvailableCars = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetch('https://rentizo-server.vercel.app/cars/')
+    fetch('https://server-car-rental.vercel.app/cars/')
       .then((res) => res.json())
       .then((data) => {
         setAllCars(data);

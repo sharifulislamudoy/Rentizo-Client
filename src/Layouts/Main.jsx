@@ -40,7 +40,7 @@ const Main = () => {
             <Footer />
 
             {/* Container for showing toast notifications */}
-            <ToastContainer />
+            <ToastContainer position="top-right" autoClose={2000} />
         </div>
     );
 };

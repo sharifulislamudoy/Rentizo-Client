@@ -28,7 +28,7 @@ const MyBookings = () => {
   // Fetch bookings when user email is available
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://rentizo-server.vercel.app/bookings?email=${user.email}`, {
+      fetch(`https://server-car-rental.vercel.app/bookings?email=${user.email}`, {
         credentials: 'include', // send cookies for authentication if any
       })
         .then((res) => res.json())
@@ -57,7 +57,7 @@ const MyBookings = () => {
     if (confirm.isConfirmed) {
       try {
         const res = await fetch(
-          `https://rentizo-server.vercel.app/bookings/${id}?email=${user?.email}`,
+          `https://server-car-rental.vercel.app/bookings/${id}?email=${user?.email}`,
           {
             method: 'DELETE',
             credentials: 'include',
@@ -88,7 +88,7 @@ const MyBookings = () => {
   // Update booking dates on server and update UI list
   const handleUpdate = async () => {
     const res = await fetch(
-      `https://rentizo-server.vercel.app/bookings/${selectedBooking._id}?email=${user?.email}`,
+      `https://server-car-rental.vercel.app/bookings/${selectedBooking._id}?email=${user?.email}`,
       {
         method: 'PATCH',
         credentials: 'include',

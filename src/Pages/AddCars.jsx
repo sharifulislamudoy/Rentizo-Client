@@ -48,7 +48,7 @@ const AddCar = () => {
 
     try {
       // Send POST request to add car API
-      const res = await fetch(`https://rentizo-server.vercel.app/cars?email=${user?.email}`, {
+      const res = await fetch(`https://server-car-rental.vercel.app/cars?email=${user?.email}`, {
         method: 'POST',
         credentials: 'include', // Include cookies if any
         headers: { 'Content-Type': 'application/json' },
@@ -56,10 +56,13 @@ const AddCar = () => {
       });
 
       const data = await res.json();
-
       if (data.insertedId || res.ok) {
-        toast.success('Car added successfully!');
-        navigate('/my-cars'); // Redirect to user's car list after success
+        toast.success('Car added successfully!', {
+          duration: 1500,
+        });
+        setTimeout(() => {
+          navigate('/my-cars');
+        }, 1000);
       } else {
         throw new Error(data.message || 'Failed to add car');
       }
