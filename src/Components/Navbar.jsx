@@ -80,7 +80,7 @@ const Navbar = () => {
 
     return (
         // Navbar wrapper with sticky top and shadow for elevation
-        <div className="backdrop-blur-md shadow-md sticky top-0 z-50">
+        <div className="bg-base-300 shadow-md sticky top-0 z-50">
             <div className="navbar lg:w-11/12 mx-auto px-4">
 
                 {/* Mobile menu toggle button visible only on small screens */}

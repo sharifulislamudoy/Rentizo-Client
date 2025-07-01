@@ -117,7 +117,7 @@ const AvailableCars = () => {
       {/* Cars */}
       {view === 'grid' ? (
         <motion.div
-          className="grid md:grid-cols-3 gap-6"
+          className="grid md:grid-cols-3 lg:grid-cols-4 gap-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
