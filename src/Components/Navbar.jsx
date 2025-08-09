@@ -1,50 +1,49 @@
 import { Link, NavLink } from 'react-router';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FaCar, FaSignOutAlt } from 'react-icons/fa';
+import { FaCar, FaSignOutAlt, FaUserPlus } from 'react-icons/fa';
 import { useContext, useState } from 'react';
-import ThemeToggle from '../Utils/ThemeToggle';
 import { AuthContext } from '../Provider/AuthProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
-// Variants for animation controlling the stagger and fade-in of menu items
 const listVariants = {
     initial: {},
     animate: {
         transition: {
-            staggerChildren: 0.07,  // delay between each child animation
-            delayChildren: 0.1,     // delay before children start animating
+            staggerChildren: 0.07,
+            delayChildren: 0.1,
         },
     },
 };
 
 const itemVariants = {
-    initial: { opacity: 0, y: 10 }, // start slightly down and invisible
-    animate: { opacity: 1, y: 0 },  // animate to visible and original position
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
 };
 
 const Navbar = () => {
-    // State to track if mobile menu is open or closed
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    // Get current user info and logout function from AuthContext
     const { user, logOut } = useContext(AuthContext);
 
-    // Define navigation links based on whether user is logged in
-    const navItems = user
+    // Simplified navigation links (only public routes)
+    const navItems = [
+        { name: 'Home', path: '/' },
+        { name: 'Available Cars', path: '/available-cars' },
+        { name: 'About Us', path: '/about-us' },
+        { name: 'Contact Us', path: '/contact-us' },
+        { name: 'Blog', path: '/blog' },
+        { name: 'FAQ', path: '/faq' },
+    ];
+
+    // User-specific links (will appear in drawer)
+    const userLinks = user
         ? [
-            { name: 'Home', path: '/' },
-            { name: 'Available Cars', path: '/available-cars' },
             { name: 'Add Car', path: '/add-car' },
             { name: 'My Cars', path: '/my-cars' },
             { name: 'My Bookings', path: '/my-bookings' },
         ]
-        : [
-            { name: 'Home', path: '/' },
-            { name: 'Available Cars', path: '/available-cars' },
-        ];
+        : [];
 
-    // Handle user logout with confirmation and API call
     const handleLogout = async () => {
         const result = await Swal.fire({
             title: 'Are you sure?',
@@ -58,20 +57,12 @@ const Navbar = () => {
 
         if (result.isConfirmed) {
             try {
-                // Call backend logout endpoint to clear session or cookies
                 await axios.post('https://server-car-rental.vercel.app/logout', {}, { withCredentials: true });
-
-                // Logout from Firebase auth
                 await logOut();
-
-                // Show success message
                 Swal.fire('Logged out!', 'You have been logged out.', 'success');
-
-                // Close any open drawers for better UX
                 document.getElementById('my-drawer-4')?.click();
                 document.getElementById('mobile-drawer')?.click();
             } catch (error) {
-                // Show error message if logout fails
                 console.error('Logout failed:', error);
                 Swal.fire('Error', 'Logout failed. Please try again.', 'error');
             }
@@ -79,28 +70,18 @@ const Navbar = () => {
     };
 
     return (
-        // Navbar wrapper with sticky top and shadow for elevation
-        <div className="bg-base-300 shadow-md sticky top-0 z-50">
+        <div className="shadow-sm sticky top-0 z-50 border-b-2 border-primary rounded-b-xl bg-black">
             <div className="navbar lg:w-11/12 mx-auto px-4">
-
-                {/* Mobile menu toggle button visible only on small screens */}
+                {/* Mobile menu toggle */}
                 <div className="lg:hidden mr-3">
-                    <label
-                        className="btn btn-circle swap swap-rotate"
-                        aria-label="Toggle navigation menu"
-                        aria-expanded={isMenuOpen}
-                    >
-                        <input
-                            type="checkbox"
-                            onChange={() => setIsMenuOpen(!isMenuOpen)}
-                            checked={isMenuOpen}
-                        />
+                    <label className="btn btn-ghost btn-circle swap swap-rotate" aria-label="Toggle navigation menu">
+                        <input type="checkbox" onChange={() => setIsMenuOpen(!isMenuOpen)} checked={isMenuOpen} />
                         {/* Hamburger icon */}
-                        <svg className="swap-off fill-current" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512">
+                        <svg className="swap-off fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 512 512">
                             <path d="M64,384H448V341.33H64Zm0-106.67H448V234.67H64ZM64,128v42.67H448V128Z" />
                         </svg>
                         {/* Close icon */}
-                        <svg className="swap-on fill-current" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512">
+                        <svg className="swap-on fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 512 512">
                             <polygon points="400 145.49 366.51 112 256 222.51 145.49 112 112 145.49 
                                 222.51 256 112 366.51 145.49 400 256 289.49 
                                 366.51 400 400 366.51 289.49 256 400 145.49" />
@@ -108,24 +89,24 @@ const Navbar = () => {
                     </label>
                 </div>
 
-                {/* Logo section - links to home page */}
-                <div className="flex-1 flex items-center lg:flex-none">
+                {/* Logo */}
+                <div className="flex-1 flex items-center lg:flex-none ml-3">
                     <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
                         <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
                             <FaCar className="text-2xl" />
-                            Rentizo
+                            <span className="hidden sm:inline">Rentizo</span>
                         </Link>
                     </motion.div>
                 </div>
 
-                {/* Navigation links - visible on large screens */}
+                {/* Desktop Navigation */}
                 <div className="hidden lg:flex flex-1 justify-center gap-6 items-center">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.name}
                             to={item.path}
                             className={({ isActive }) =>
-                                `text-base font-medium transition-colors duration-300 ${isActive ? 'text-primary underline' : 'text-gray-700 hover:text-primary'}`
+                                `text-sm font-medium transition-colors duration-200 ${isActive ? 'text-primary' : 'text-white hover:text-primary'}`
                             }
                         >
                             {item.name}
@@ -133,110 +114,125 @@ const Navbar = () => {
                     ))}
                 </div>
 
-                {/* Right side controls: theme toggle, profile drawer, and login/logout buttons */}
+                {/* Desktop Right Side */}
                 <div className="hidden lg:flex items-center gap-4">
-                    <ThemeToggle />
-                    <div className="drawer drawer-end">
-                        <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-                        <div className="drawer-content">
-                            {/* Profile image button to open drawer */}
-                            <label htmlFor="my-drawer-4" className="cursor-pointer">
-                                <img
-                                    src={user?.photoURL || 'https://i.ibb.co/BVHW9x0W/Untitled-design-77.png'}
-                                    alt="Profile"
-                                    className="w-10 h-10 rounded-full border-2 border-primary hover:scale-105 transition-transform"
-                                />
-                            </label>
-                        </div>
-                        <div className="drawer-side z-50">
-                            <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-                            <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4 space-y-3">
-                                {user ? (
-                                    <>
-                                        {/* Show user details */}
-                                        <li><span><strong>Name:</strong> {user.displayName || 'N/A'}</span></li>
-                                        <li><span><strong>Email:</strong> {user.email}</span></li>
-                                        {/* Logout button */}
-                                        <li>
-                                            <button className="btn btn-error text-white" onClick={handleLogout}>
+                    {user ? (
+                        <div className="drawer drawer-end">
+                            <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
+                            <div className="drawer-content">
+                                <label htmlFor="my-drawer-4" className="cursor-pointer">
+                                    <div className="avatar">
+                                        <div className="w-10 rounded-full ring-2 ring-primary hover:ring-offset-2 transition-all">
+                                            <img src={user?.photoURL || 'https://i.ibb.co/BVHW9x0W/Untitled-design-77.png'} alt="Profile" />
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div className="drawer-side z-50">
+                                <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
+                                <div className="menu bg-black border-l-2 text-base-content min-h-full w-80 p-4  border-primary rounded-l-xl">
+                                    <div className="flex flex-col items-center py-4 border-b border-base-200 mb-4">
+                                        <div className="avatar mb-3">
+                                            <div className="w-16 rounded-full ring-2 ring-primary">
+                                                <img src={user?.photoURL || 'https://i.ibb.co/BVHW9x0W/Untitled-design-77.png'} alt="Profile" />
+                                            </div>
+                                        </div>
+                                        <h3 className="font-bold text-lg">{user.displayName || 'User'}</h3>
+                                        <p className="text-sm text-gray-500">{user.email}</p>
+                                    </div>
+
+                                    <ul className="space-y-1">
+                                        {userLinks.map((item) => (
+                                            <li key={item.name}>
+                                                <Link to={item.path} className="hover:bg-base-200">
+                                                    {item.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                        <li className="mt-4">
+                                            <button
+                                                onClick={handleLogout}
+                                                className="btn btn-error btn-sm w-full"
+                                            >
                                                 <FaSignOutAlt className="mr-2" /> Logout
                                             </button>
                                         </li>
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* Message for logged out users */}
-                                        <li><span className="text-center">You are not logged in</span></li>
-                                        {/* Login button */}
-                                        <li>
-                                            <Link
-                                                to="/login"
-                                                className="btn btn-primary text-white"
-                                                onClick={() => document.getElementById('my-drawer-4')?.click()}
-                                            >
-                                                Login
-                                            </Link>
-                                        </li>
-                                    </>
-                                )}
-                            </ul>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex gap-2 mr-3">
+                            <Link to="/login" className="btn btn-ghost btn-sm">
+                                Login
+                            </Link>
+                            <Link to="/register" className="btn btn-primary btn-sm">
+                                <FaUserPlus className="mr-1" /> Join Us
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
-                {/* Mobile right side: theme toggle and profile drawer */}
+                {/* Mobile Right Side */}
                 <div className="lg:hidden flex items-center gap-2">
-                    <ThemeToggle />
-                    <div className="drawer drawer-end">
-                        <input id="mobile-drawer" type="checkbox" className="drawer-toggle" />
-                        <div className="drawer-content">
-                            {/* Profile image button for mobile */}
-                            <label htmlFor="mobile-drawer" className="cursor-pointer">
-                                <img
-                                    src={user?.photoURL || 'https://i.ibb.co/rH6jYwH/default-user.png'}
-                                    alt="Profile"
-                                    className="w-10 h-10 rounded-full border-2 border-primary hover:scale-105 transition-transform"
-                                />
-                            </label>
-                        </div>
-                        <div className="drawer-side z-50">
-                            <label htmlFor="mobile-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-                            <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4 space-y-3">
-                                {user ? (
-                                    <>
-                                        {/* Show user details */}
-                                        <li><span><strong>Name:</strong> {user.displayName || 'N/A'}</span></li>
-                                        <li><span><strong>Email:</strong> {user.email}</span></li>
-                                        {/* Logout button */}
-                                        <li>
-                                            <button className="btn btn-error text-white" onClick={handleLogout}>
+                    {user ? (
+                        <div className="drawer drawer-end">
+                            <input id="mobile-drawer" type="checkbox" className="drawer-toggle" />
+                            <div className="drawer-content">
+                                <label htmlFor="mobile-drawer" className="cursor-pointer">
+                                    <div className="avatar">
+                                        <div className="w-8 rounded-full ring-1 ring-primary">
+                                            <img src={user?.photoURL || 'https://i.ibb.co/BVHW9x0W/Untitled-design-77.png'} alt="Profile" />
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div className="drawer-side z-50">
+                                <label htmlFor="mobile-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+                                <div className="menu bg-black text-base-content min-h-full w-72 p-4 border-l-2 border-primary rounded-l-xl">
+                                    <div className="flex flex-col items-center py-4 border-b border-base-200 mb-4">
+                                        <div className="avatar mb-3">
+                                            <div className="w-14 rounded-full ring-2 ring-primary">
+                                                <img src={user?.photoURL || 'https://i.ibb.co/BVHW9x0W/Untitled-design-77.png'} alt="Profile" />
+                                            </div>
+                                        </div>
+                                        <h3 className="font-bold text-md">{user.displayName || 'User'}</h3>
+                                        <p className="text-xs text-gray-500">{user.email}</p>
+                                    </div>
+
+                                    <ul className="space-y-1">
+                                        {userLinks.map((item) => (
+                                            <li key={item.name}>
+                                                <Link
+                                                    to={item.path}
+                                                    className="hover:bg-base-200"
+                                                    onClick={() => document.getElementById('mobile-drawer')?.click()}
+                                                >
+                                                    {item.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                        <li className="mt-4">
+                                            <button
+                                                onClick={handleLogout}
+                                                className="btn btn-error btn-sm w-full"
+                                            >
                                                 <FaSignOutAlt className="mr-2" /> Logout
                                             </button>
                                         </li>
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* Message when not logged in */}
-                                        <li><span className="text-center">You are not logged in</span></li>
-                                        {/* Login button */}
-                                        <li>
-                                            <Link
-                                                to="/login"
-                                                className="btn btn-primary text-white"
-                                                onClick={() => document.getElementById('mobile-drawer')?.click()}
-                                            >
-                                                Login
-                                            </Link>
-                                        </li>
-                                    </>
-                                )}
-                            </ul>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <Link to="/login" className="btn btn-ghost btn-sm px-2">
+                            Login
+                        </Link>
+                    )}
                 </div>
             </div>
 
-            {/* Mobile dropdown menu with animation */}
+            {/* Mobile Dropdown Menu */}
             <AnimatePresence>
                 {isMenuOpen && (
                     <motion.div
@@ -244,10 +240,10 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.3 }}
-                        className="absolute lg:hidden px-4 pb-4 backdrop-blur-sm bg-base-100/80 rounded-b-xl shadow w-full"
+                        className="lg:hidden px-4 pb-4 bg-black shadow-md w-full"
                     >
                         <motion.ul
-                            className="menu rounded-box w-full space-y-2 mt-2"
+                            className="menu rounded-box w-full space-y-1 mt-2"
                             variants={listVariants}
                             initial="initial"
                             animate="animate"
@@ -256,10 +252,9 @@ const Navbar = () => {
                                 <motion.li key={item.name} variants={itemVariants}>
                                     <NavLink
                                         to={item.path}
-                                        onClick={() => setIsMenuOpen(false)} // Close menu on link click
+                                        onClick={() => setIsMenuOpen(false)}
                                         className={({ isActive }) =>
-                                            `block py-2 px-3 text-sm transition-colors duration-300 ${isActive ? 'text-primary font-semibold' : 'hover:text-primary'
-                                            }`
+                                            `block py-2 px-3 text-sm ${isActive ? 'text-primary font-medium' : 'hover:bg-base-200'}`
                                         }
                                     >
                                         {item.name}

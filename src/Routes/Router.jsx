@@ -11,28 +11,28 @@ import CarDetails from "../Pages/CarDetails";
 import MyBookings from "../Pages/MyBookings";
 import HolidayDeal from "../Components/HolidayDeal";
 import PrivateRoute from "../Provider/PrivateRoute";
+import AboutUs from "../Pages/AboutUs";
 
-// Define the app routes using React Router's createBrowserRouter
 export const router = createBrowserRouter([
   {
-    path: "/", // Main layout path
-    Component: Main, // Layout component wrapping all child routes
-    errorElement: <NotFoundPage />, // Shown when route is not found
+    path: "/", 
+    Component: Main, 
+    errorElement: <NotFoundPage />,
     children: [
       {
-        index: true, // Default route for "/"
-        Component: Home, // Home page component
+        index: true,
+        Component: Home,
       },
       {
-        path: "/login", // Login page route
+        path: "/login", 
         Component: Login,
       },
       {
-        path: "/register", // Register page route
+        path: "/register",
         Component: Register,
       },
       {
-        path: "/add-car", // Protected route to add a car
+        path: "/add-car", 
         element: (
           <PrivateRoute>
             <AddCar />
@@ -40,7 +40,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/my-cars", // Protected route to show user's cars
+        path: "/my-cars",
         element: (
           <PrivateRoute>
             <MyCars />
@@ -48,15 +48,15 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/available-cars", // Public route to show available cars
+        path: "/available-cars", 
         Component: AvailableCars,
       },
       {
-        path: "/car-details/:id", // Dynamic route for car details by id
+        path: "/car-details/:id", 
         element: <CarDetails />,
       },
       {
-        path: "/my-bookings", // Protected route to show user's bookings
+        path: "/my-bookings",
         element: (
           <PrivateRoute>
             <MyBookings />
@@ -64,9 +64,13 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/holiday-deal", // Public route to show holiday deals
+        path: "/holiday-deal",
         Component: HolidayDeal,
       },
+      {
+        path:'/about-us',
+        Component: AboutUs
+      }
     ],
   },
 ]);
