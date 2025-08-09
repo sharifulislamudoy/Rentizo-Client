@@ -13,6 +13,8 @@ import HolidayDeal from "../Components/HolidayDeal";
 import PrivateRoute from "../Provider/PrivateRoute";
 import AboutUs from "../Pages/AboutUs";
 import ContactUs from "../Pages/ContactUs";
+import Blog from "../Pages/Blog";
+import FAQ from "../Pages/FAQ";
 
 export const router = createBrowserRouter([
   {
@@ -75,6 +77,14 @@ export const router = createBrowserRouter([
       {
         path: '/contact-us',
         Component: ContactUs
+      },
+      {
+        path: '/blog',
+        Component: Blog
+      },
+      {
+        path: '/faq',
+        Component: FAQ
       }
     ],
   },

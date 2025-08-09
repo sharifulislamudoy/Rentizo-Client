@@ -32,7 +32,7 @@ const ContactUs = () => {
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="contact">
-            <div className="max-w-7xl mx-auto">
+            <div className="w-11/12 mx-auto">
                 {/* Header */}
                 <motion.div 
                     className="text-center mb-16"
