@@ -1,3 +1,4 @@
+import { ReTitle } from 're-title';
 import Banner from '../Components/Banner';
 import LuxuryExperienceSection from '../Components/LuxuryExperienceSection';
 import RecentListings from '../Components/RecentListings';
@@ -11,7 +12,7 @@ const Home = () => {
 
   return (
     <div>
-      {/* Main sections of the homepage */}
+      <ReTitle title='Retizo | Home' />
       <Banner />
       <WhyChooseUs />
       <RecentListings />

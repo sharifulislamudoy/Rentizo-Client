@@ -6,3 +6,40 @@ body {
 
     font-family: "Savate", sans-serif;
 }
+
+:root {
+    /* Modern gradient color palette */
+    --primary: #3b82f6;
+    /* Vibrant blue */
+    --primary-light: #60a5fa;
+    --primary-dark: #2563eb;
+
+    --secondary: #8b5cf6;
+    /* Vibrant purple */
+    --secondary-light: #a78bfa;
+    --secondary-dark: #7c3aed;
+}
+
+.bg-primary {
+    background-color: var(--primary);
+}
+
+.bg-secondary {
+    background-color: var(--secondary);
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-secondary {
+    color: var(--secondary);
+}
+
+.border-primary {
+    border-color: var(--primary);
+}
+
+.border-secondary {
+    border-color: var(--secondary);
+}
