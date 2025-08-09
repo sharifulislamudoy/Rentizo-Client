@@ -1,23 +1,24 @@
-import { Link } from 'react-router'; 
-import { motion } from 'framer-motion'; 
+import { Link } from 'react-router';
+import { motion } from 'framer-motion';
 import BannerImg from '../assets/Banner1.png';
+import CountUp from 'react-countup';
 
 const Banner = () => {
     return (
         <div className="relative w-full h-[80vh] overflow-hidden">
             {/* Modern layered background */}
             <div className="absolute inset-0 bg-black/30 z-0"></div>
-            <div 
+            <div
                 className="absolute inset-0 bg-cover bg-center z-0"
-                style={{ 
+                style={{
                     backgroundImage: `url(${BannerImg})`,
                     filter: 'brightness(0.8) contrast(1.2)'
                 }}
             ></div>
-            
+
             {/* Floating abstract shapes */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                <motion.div 
+                <motion.div
                     className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-primary/10 blur-lg"
                     animate={{
                         scale: [1, 1.2, 1],
@@ -29,7 +30,7 @@ const Banner = () => {
                         ease: "easeInOut"
                     }}
                 />
-                <motion.div 
+                <motion.div
                     className="absolute -bottom-20 -right-20 w-60 h-60 rounded-full bg-secondary/10 blur-lg"
                     animate={{
                         scale: [1, 1.3, 1],
@@ -53,7 +54,7 @@ const Banner = () => {
                 <div className="backdrop-blur-sm bg-white/5 p-6 sm:p-8 md:p-10 rounded-2xl border border-white/10 shadow-lg">
                     {/* Typography */}
                     <div className="mb-6">
-                        <motion.h1 
+                        <motion.h1
                             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-snug"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -65,8 +66,8 @@ const Banner = () => {
                             <br />
                             <span className="text-white">Cars in 60 Seconds</span>
                         </motion.h1>
-                        
-                        <motion.p 
+
+                        <motion.p
                             className="text-sm sm:text-base text-white/80 max-w-lg"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -84,9 +85,9 @@ const Banner = () => {
                         className="flex flex-col sm:flex-row gap-3 mb-8"
                     >
                         <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg p-0.5 border border-white/20 flex">
-                            <input 
-                                type="text" 
-                                placeholder="Search location or brand..." 
+                            <input
+                                type="text"
+                                placeholder="Search location or brand..."
                                 className="flex-1 bg-transparent border-none text-white placeholder-white/50 px-3 py-2 sm:px-4 sm:py-2.5 text-sm focus:outline-none"
                             />
                             <button className="px-3 text-white/50 hover:text-white transition-colors">
@@ -114,13 +115,18 @@ const Banner = () => {
                         className="grid grid-cols-2 sm:grid-cols-4 gap-3"
                     >
                         {[
-                            { value: "500+", label: "Vehicles" },
-                            { value: "24/7", label: "Support" },
-                            { value: "5★", label: "Rated" },
-                            { value: "0%", label: "Fees" }
+                            { value: 500, suffix: "+", label: "Vehicles" },
+                            { value: 24, suffix: "/7", label: "Support" },
+                            { value: 5, suffix: "★", label: "Rated" },
+                            { value: 0, suffix: "%", label: "Fees" }
                         ].map((stat, index) => (
-                            <div key={index} className="bg-white/5 backdrop-blur-sm p-3 rounded-lg border border-white/10">
-                                <div className="text-xl font-bold text-primary">{stat.value}</div>
+                            <div
+                                key={index}
+                                className="bg-white/5 backdrop-blur-sm p-3 rounded-lg border border-white/10 text-center"
+                            >
+                                <div className="text-xl font-bold text-primary">
+                                    <CountUp end={stat.value} duration={5} suffix={stat.suffix} />
+                                </div>
                                 <div className="text-xs text-white/70">{stat.label}</div>
                             </div>
                         ))}
