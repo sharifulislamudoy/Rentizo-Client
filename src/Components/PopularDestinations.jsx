@@ -39,7 +39,7 @@ const PopularDestinations = () => {
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white">
-            <div className="w-11/12 mx-auto mt-20">
+            <div className="w-11/12 mx-auto my-20">
                 <motion.div
                     className="text-center mb-16"
                     initial={{ opacity: 0, y: 20 }}
