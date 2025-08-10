@@ -1,24 +1,25 @@
-import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router';
-import useScrollToTop from '../Utils/UseScrollToTop';
-import { useContext, useState } from 'react';
-import { AuthContext, googleProvider } from '../Provider/AuthProvider';
-import { FcGoogle } from 'react-icons/fc';
-import Swal from 'sweetalert2';
-import { signInWithPopup, updateProfile } from 'firebase/auth';
-import { auth } from '../Firebase/firebase__config__';
-import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { FaCar } from 'react-icons/fa';
+import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router";
+import useScrollToTop from "../Utils/UseScrollToTop";
+import { useContext, useState } from "react";
+import { AuthContext, googleProvider } from "../Provider/AuthProvider";
+import { FcGoogle } from "react-icons/fc";
+import Swal from "sweetalert2";
+import { signInWithPopup, updateProfile } from "firebase/auth";
+import { auth } from "../Firebase/firebase__config__";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { FaCar } from "react-icons/fa";
+import axios from "axios";
 
 const Register = () => {
-    useScrollToTop();
-    const navigate = useNavigate();
-    const [error, setError] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const { createUser } = useContext(AuthContext);
+  useScrollToTop();
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { createUser } = useContext(AuthContext);
 
-    const containerVariants = {
+      const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -41,91 +42,108 @@ const Register = () => {
         }
     };
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        
-        const form = e.target;
-        const name = form.name.value;
-        const email = form.email.value;
-        const password = form.password.value;
-        const photoURL = form.photoURL.value;
+  const saveUserToDB = async (name, email) => {
+    try {
+      await axios.post(
+        "http://localhost:3000/users",
+        { name, email },
+        { withCredentials: true }
+      );
+    } catch (err) {
+      console.error("Failed to save user:", err);
+    }
+  };
 
-        setError('');
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters");
-            setIsLoading(false);
-            return;
-        }
+    const form = e.target;
+    const name = form.name.value;
+    const email = form.email.value;
+    const password = form.password.value;
+    const photoURL = form.photoURL.value;
 
-        try {
-            const userCredential = await createUser(email, password);
-            await updateProfile(auth.currentUser, {
-                displayName: name,
-                photoURL: photoURL || undefined,
-            });
-            
-            showSuccessToast("Registration Successful!");
-            form.reset();
-            navigate('/');
-        } catch (error) {
-            handleRegisterError(error);
-        } finally {
-            setIsLoading(false);
-        }
+    setError("");
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const userCredential = await createUser(email, password);
+      await updateProfile(auth.currentUser, {
+        displayName: name,
+        photoURL: photoURL || undefined
+      });
+
+      await saveUserToDB(name, email);
+
+      showSuccessToast("Registration Successful!");
+      form.reset();
+      navigate("/");
+    } catch (error) {
+      handleRegisterError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      await saveUserToDB(user.displayName || "Unnamed User", user.email);
+
+      showSuccessToast("Google Registration Successful!");
+      navigate("/");
+    } catch (error) {
+      showErrorToast(`Google Sign In Failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const showSuccessToast = (message) => {
+    Swal.fire({
+      title: message,
+      icon: "success",
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      background: "#f0f9ff",
+      color: "#0f172a"
+    });
+  };
+
+  const showErrorToast = (message) => {
+    Swal.fire({
+      title: message,
+      icon: "error",
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      background: "#f0f9ff",
+      color: "#0f172a"
+    });
+  };
+
+  const handleRegisterError = (error) => {
+    const errorCode = error?.code || "";
+    const errorMessageMap = {
+      "auth/email-already-in-use": "Email already in use. Please login instead.",
+      "auth/weak-password": "Password should be at least 6 characters.",
+      "auth/invalid-email": "Please enter a valid email address."
     };
-
-    const handleGoogleSignIn = async () => {
-        setIsLoading(true);
-        try {
-            await signInWithPopup(auth, googleProvider);
-            showSuccessToast("Google Registration Successful!");
-            navigate('/');
-        } catch (error) {
-            showErrorToast(`Google Sign In Failed: ${error.message}`);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const showSuccessToast = (message) => {
-        Swal.fire({
-            title: message,
-            icon: "success",
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            background: "#f0f9ff",
-            color: "#0f172a",
-        });
-    };
-
-    const showErrorToast = (message) => {
-        Swal.fire({
-            title: message,
-            icon: "error",
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            background: "#f0f9ff",
-            color: "#0f172a",
-        });
-    };
-
-    const handleRegisterError = (error) => {
-        const errorCode = error?.code || '';
-        const errorMessageMap = {
-            "auth/email-already-in-use": "Email already in use. Please login instead.",
-            "auth/weak-password": "Password should be at least 6 characters.",
-            "auth/invalid-email": "Please enter a valid email address.",
-        };
-        setError(errorMessageMap[errorCode] || "Registration failed. Please try again.");
-    };
+    setError(errorMessageMap[errorCode] || "Registration failed. Please try again.");
+  };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-black">
@@ -225,7 +243,7 @@ const Register = () => {
                                 </motion.div>
 
                                 {error && (
-                                    <motion.div 
+                                    <motion.div
                                         variants={itemVariants}
                                         className="text-red-400 text-sm font-medium px-4 py-2 bg-red-900/20 rounded-lg"
                                     >

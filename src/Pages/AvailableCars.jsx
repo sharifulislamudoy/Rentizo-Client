@@ -24,7 +24,7 @@ const AvailableCars = () => {
   const carTypes = [...new Set(allCars.map((car) => car.carType))];
 
   useEffect(() => {
-    fetch("https://server-car-rental.vercel.app/cars/")
+    fetch("http://localhost:3000/cars/")
       .then((res) => res.json())
       .then((data) => {
         setAllCars(data);

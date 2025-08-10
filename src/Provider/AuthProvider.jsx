@@ -1,102 +1,102 @@
-import { 
-  createUserWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  onAuthStateChanged, 
-  sendPasswordResetEmail, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  updateProfile 
-} from 'firebase/auth';
-import { createContext, useEffect, useState } from 'react';
-import { auth } from '../Firebase/firebase__config__';
-import axios from 'axios';
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile
+} from "firebase/auth";
+import { createContext, useEffect, useState } from "react";
+import { auth } from "../Firebase/firebase__config__";
+import axios from "axios";
 
-// Create a context to share auth data across components
 export const AuthContext = createContext();
-
-// Google sign-in provider for OAuth
 export const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
-    // Store current logged-in user and loading state
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Register a new user with email and password
-    const createUser = (email, password) => {
-        setLoading(true);
-        return createUserWithEmailAndPassword(auth, email, password);
-    };
+  // Save user to DB
+  const saveUserToDB = async (name, email) => {
+    try {
+      await axios.post(
+        "http://localhost:3000/users",
+        { name, email }, // role defaults to 'user' in backend
+        { withCredentials: true }
+      );
+    } catch (err) {
+      console.error("Error saving user:", err);
+    }
+  };
 
-    // Sign in user with email and password
-    const signIn = (email, password) => {
-        setLoading(true);
-        return signInWithEmailAndPassword(auth, email, password);
-    };
+  const createUser = (email, password) => {
+    setLoading(true);
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
 
-    // Log out the current user
-    const logOut = () => {
-        setLoading(true);
-        return signOut(auth);
-    };
+  const signIn = (email, password) => {
+    setLoading(true);
+    return signInWithEmailAndPassword(auth, email, password);
+  };
 
-    // Update user profile info like display name or photo URL
-    const updateUser = (updatedData) => {
-        return updateProfile(auth.currentUser, updatedData);
-    };
+  const logOut = () => {
+    setLoading(true);
+    return signOut(auth);
+  };
 
-    // Send password reset email to the user
-    const resetPassword = (email) => {
-        setLoading(true);
-        return sendPasswordResetEmail(auth, email);
-    };
+  const updateUser = (updatedData) => {
+    return updateProfile(auth.currentUser, updatedData);
+  };
 
-    // Listen to authentication state changes (login/logout)
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, currentUser => {
-            setUser(currentUser);
-            setLoading(false);
+  const resetPassword = (email) => {
+    setLoading(true);
+    return sendPasswordResetEmail(auth, email);
+  };
 
-            // If user is logged in, request a JWT token from server
-            if (currentUser?.email) {
-                const userData = { email: currentUser.email };
-                axios.post('https://server-car-rental.vercel.app/jwt', userData, {
-                    withCredentials: true // send cookies if any
-                })
-                .then(res => {
-                    // Normally you would store the JWT token here (e.g., localStorage)
-                })
-                .catch(error => {
-                    console.log('JWT token request error:', error);
-                });
-            }
-        });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
 
-        // Cleanup subscription on component unmount
-        return () => {
-            unsubscribe();
-        };
-    }, []);
+      if (currentUser?.email) {
+        try {
+          // Save user to DB (name from displayName)
+          await saveUserToDB(currentUser.displayName || "Unnamed User", currentUser.email);
 
-    // Provide auth methods and user info to all children components
-    const authInfo = {
-        user,
-        setUser,
-        loading,
-        createUser,
-        signIn,
-        logOut,
-        setLoading,
-        updateUser,
-        resetPassword
-    };
+          // Request JWT
+          await axios.post(
+            "http://localhost:3000/jwt",
+            { email: currentUser.email },
+            { withCredentials: true }
+          );
+        } catch (error) {
+          console.error("Auth state change error:", error);
+        }
+      }
+    });
 
-    return (
-        // Render children only when loading is false to avoid flickering
-        <AuthContext.Provider value={authInfo}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+    return () => unsubscribe();
+  }, []);
+
+  const authInfo = {
+    user,
+    setUser,
+    loading,
+    createUser,
+    signIn,
+    logOut,
+    setLoading,
+    updateUser,
+    resetPassword
+  };
+
+  return (
+    <AuthContext.Provider value={authInfo}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthProvider;

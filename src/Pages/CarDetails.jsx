@@ -18,7 +18,7 @@ const CarDetails = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://server-car-rental.vercel.app/bookings?email=${user.email}`, {
+      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -27,7 +27,7 @@ const CarDetails = () => {
   }, [user]);
 
   useEffect(() => {
-    fetch(`https://server-car-rental.vercel.app/cars/${id}`)
+    fetch(`http://localhost:3000/cars/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCar(data);
@@ -65,7 +65,7 @@ const CarDetails = () => {
       };
 
       try {
-        const response = await fetch(`https://server-car-rental.vercel.app/bookings?email=${user?.email}`, {
+        const response = await fetch(`http://localhost:3000/bookings?email=${user?.email}`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -78,7 +78,7 @@ const CarDetails = () => {
           throw new Error('Failed to save booking');
         }
 
-        await fetch(`https://server-car-rental.vercel.app/bookings/${car._id}/increment`, {
+        await fetch(`http://localhost:3000/bookings/${car._id}/increment`, {
           method: 'PATCH',
         });
 

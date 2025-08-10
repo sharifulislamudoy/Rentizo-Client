@@ -57,7 +57,7 @@ const Navbar = () => {
 
         if (result.isConfirmed) {
             try {
-                await axios.post('https://server-car-rental.vercel.app/logout', {}, { withCredentials: true });
+                await axios.post('http://localhost:3000/logout', {}, { withCredentials: true });
                 await logOut();
                 Swal.fire('Logged out!', 'You have been logged out.', 'success');
                 document.getElementById('my-drawer-4')?.click();
