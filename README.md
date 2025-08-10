@@ -20,6 +20,18 @@ Rentizo is a modern, responsive rental management platform client application bu
 
 ---
 
+## Features
+
+- User authentication (signup, login, logout)
+- Browse and search available rental cars
+- Booking management and history
+- Responsive design for mobile and desktop
+- Interactive dashboards for users, car owners, and admins
+- Real-time notifications and alerts
+- Integration with backend APIs for car and booking data
+
+---
+
 
 # Rentizo Client Setup Guide
 
