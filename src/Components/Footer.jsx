@@ -49,10 +49,10 @@ const Footer = () => {
     };
 
     const socialLinks = [
-        { icon: <FaFacebookF />, url: "https://facebook.com" },
-        { icon: <FaTwitter />, url: "https://twitter.com" },
-        { icon: <FaInstagram />, url: "https://instagram.com" },
-        { icon: <FaLinkedinIn />, url: "https://linkedin.com" }
+        { icon: <FaFacebookF />, url: "https://www.facebook.com/sharifulislamudoy56/" },
+        { icon: <FaTwitter />, url: "https://x.com/MohonaAkte56859" },
+        { icon: <FaInstagram />, url: "https://www.instagram.com/s_h_a_r_i_f_u_l_1039/" },
+        { icon: <FaLinkedinIn />, url: "https://www.linkedin.com/in/shariful-islam-udoy" }
     ];
 
     const quickLinks = [
