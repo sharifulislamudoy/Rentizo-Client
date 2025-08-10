@@ -2,7 +2,23 @@
 
 ## Overview
 
-Rentizo is a modern, responsive rental management platform client application built with React. It enables users to browse, book, and manage vehicle rentals seamlessly with a clean, intuitive UI.
+Rentizo is a modern, fully responsive rental management platform client application built with React. It provides a seamless and user-friendly experience for users to browse available vehicles, book rentals, and manage their bookings efficiently. The platform supports multiple user roles including customers, car owners, and administrators, each with tailored dashboards and features.
+
+The application is designed with performance, accessibility, and smooth animations in mind, ensuring an engaging experience across devices — from desktops to smartphones.
+
+### Technologies Used
+
+Rentizo client leverages a robust and modern tech stack, including:
+
+- **React.js** for building interactive user interfaces
+- **React Router** for dynamic routing and navigation
+- **Tailwind CSS** and **DaisyUI** for utility-first styling and component design
+- **Framer Motion** for smooth animations and transitions
+- **React Icons** for scalable iconography
+- **Axios** for handling HTTP requests to backend APIs
+
+This combination of technologies enables Rentizo to deliver a scalable, maintainable, and visually appealing rental platform.
+
 
 ---
 
@@ -11,8 +27,6 @@ Rentizo is a modern, responsive rental management platform client application bu
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -80,7 +94,7 @@ To properly run the Rentizo client, you need to configure environment variables 
 
 Create a `.env.local` file in the root of the project and add the following variables:
 
-```env.local
+   ```env.local
    VITE_FIREBASE_API_KEY=AIzaSyBPUnnxdmmlc3WdnGG1ZzOPzZXTges0Yzg
    VITE_FIREBASE_AUTH_DOMAIN=rentizo.firebaseapp.com
    VITE_FIREBASE_PROJECT_ID=rentizo
