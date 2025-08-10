@@ -14,6 +14,10 @@ Before you begin, ensure you have the following installed:
 
 Follow these steps to set up the Rentizo client on your local machine:
 
+### Live Link
+
+[Rentizo](https://rentizo.web.app/)
+
 ### 1. Clone the Repository
 
 ```bash
