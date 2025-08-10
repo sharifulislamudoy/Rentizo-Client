@@ -10,6 +10,16 @@ Rentizo is a modern, responsive rental management platform client application bu
 
 ---
 
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
 
 # Rentizo Client Setup Guide
 
