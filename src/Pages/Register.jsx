@@ -54,42 +54,49 @@ const Register = () => {
     }
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+const handleRegister = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    const form = e.target;
-    const name = form.name.value;
-    const email = form.email.value;
-    const password = form.password.value;
-    const photoURL = form.photoURL.value;
+  const form = e.target;
+  const name = form.name.value;
+  const email = form.email.value;
+  const password = form.password.value;
+  const photoURL = form.photoURL.value;
 
-    setError("");
+  setError("");
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      setIsLoading(false);
-      return;
-    }
+  if (password.length < 6) {
+    setError("Password must be at least 6 characters");
+    setIsLoading(false);
+    return;
+  }
 
-    try {
-      const userCredential = await createUser(email, password);
-      await updateProfile(auth.currentUser, {
-        displayName: name,
-        photoURL: photoURL || undefined
-      });
+  try {
+    // 1. Create user
+    const userCredential = await createUser(email, password);
+    
+    // 2. Update profile
+    await updateProfile(auth.currentUser, {
+      displayName: name,
+      photoURL: photoURL || undefined
+    });
+    
+    // 3. Force refresh of user data
+    await auth.currentUser.reload();
+    
+    // 4. Now save to DB with updated info
+    await saveUserToDB(name, email);
 
-      await saveUserToDB(name, email);
-
-      showSuccessToast("Registration Successful!");
-      form.reset();
-      navigate("/");
-    } catch (error) {
-      handleRegisterError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    showSuccessToast("Registration Successful!");
+    form.reset();
+    navigate("/");
+  } catch (error) {
+    handleRegisterError(error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
