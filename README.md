@@ -87,6 +87,3 @@ Create a `.env.local` file in the root of the project and add the following vari
    VITE_FIREBASE_STORAGE_BUCKET=rentizo.firebasestorage.app
    VITE_FIREBASE_MESSAGING_SENDER_ID=220054668724
    VITE_FIREBASE_APP_ID=1:220054668724:web:d56afbc3aedefc68dd9ee1
-
-
-
