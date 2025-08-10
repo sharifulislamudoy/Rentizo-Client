@@ -32,9 +32,6 @@ Rentizo is a modern, responsive rental management platform client application bu
 
 ---
 
-
-# Rentizo Client Setup Guide
-
 ## Installation
 
 1. Clone the repository:
