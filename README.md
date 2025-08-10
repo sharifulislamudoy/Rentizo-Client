@@ -22,4 +22,4 @@ Follow these steps to set up the Rentizo client on your local machine:
 
 ```bash
 git clone https://github.com/sharifulislamudoy/Rentizo-Client
-cd client
+cd Rentizo-Client
