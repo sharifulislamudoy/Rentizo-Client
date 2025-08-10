@@ -16,6 +16,8 @@ Rentizo client leverages a robust and modern tech stack, including:
 - **Framer Motion** for smooth animations and transitions
 - **React Icons** for scalable iconography
 - **Axios** for handling HTTP requests to backend APIs
+- **Express** for backend
+- **MongoDB** for Database
 
 This combination of technologies enables Rentizo to deliver a scalable, maintainable, and visually appealing rental platform.
 
