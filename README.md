@@ -21,5 +21,5 @@ Follow these steps to set up the Rentizo client on your local machine:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/rentizo/client.git](https://github.com/sharifulislamudoy/Rentizo-Client
+git clone https://github.com/sharifulislamudoy/Rentizo-Client
 cd client
