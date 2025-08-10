@@ -103,9 +103,9 @@ To properly run the Rentizo client, you need to configure environment variables 
 Create a `.env.local` file in the root of the project and add the following variables:
 
    ```env.local
-   VITE_FIREBASE_API_KEY=AIzaSyBPUnnxdmmlc3WdnGG1ZzOPzZXTges0Yzg
-   VITE_FIREBASE_AUTH_DOMAIN=rentizo.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=rentizo
-   VITE_FIREBASE_STORAGE_BUCKET=rentizo.firebasestorage.app
-   VITE_FIREBASE_MESSAGING_SENDER_ID=220054668724
-   VITE_FIREBASE_APP_ID=1:220054668724:web:d56afbc3aedefc68dd9ee1
+VITE_FIREBASE_API_KEY=AIzaSyBPUnnxdmmlc3WdnGG1ZzOPzZXTges0Yzg
+VITE_FIREBASE_AUTH_DOMAIN=rentizo.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=rentizo
+VITE_FIREBASE_STORAGE_BUCKET=rentizo.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=220054668724
+VITE_FIREBASE_APP_ID=1:220054668724:web:d56afbc3aedefc68dd9ee1
