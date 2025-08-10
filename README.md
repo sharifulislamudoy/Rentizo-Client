@@ -50,5 +50,6 @@ Rentizo is a modern, responsive rental management platform client application bu
    ```bash
    npm install
    npm run dev
+   http://localhost:5173/
 
 
