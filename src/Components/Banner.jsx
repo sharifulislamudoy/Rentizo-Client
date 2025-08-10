@@ -18,7 +18,7 @@ const Banner = () => {
         }
         try {
             setIsLoading(true);
-            const { data } = await axios.get("http://localhost:3000/cars");
+            const { data } = await axios.get("https://server-car-rental.vercel.app/cars");
 
             const filtered = data.filter(car =>
                 car.location.toLowerCase().includes(query.toLowerCase()) ||

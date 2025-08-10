@@ -6,8 +6,33 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { ReTitle } from 're-title';
+import { useNavigate } from 'react-router';
+import { useState } from 'react';
+import { toast } from "react-toastify";
 
 const Blog = () => {
+  const [subscribing, setSubscribing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    setSubscribing(true);
+
+    // Simulate a short loading period
+    setTimeout(() => {
+      setSubscribing(false);
+      toast.success("You have successfully subscribed!", {
+        position: "top-center",
+      });
+
+      // Redirect after short delay so toast is visible
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    }, 1500);
+  };
+
   const blogPosts = [
     {
       id: 1,
@@ -67,9 +92,6 @@ const Blog = () => {
 
   const categories = [
     { name: "All Articles", count: 12 },
-    { name: "Industry Trends", count: 5 },
-    { name: "Travel Tips", count: 4 },
-    { name: "Vehicle Care", count: 3 }
   ];
 
   const popularTags = [
@@ -77,9 +99,14 @@ const Blog = () => {
     "#Economy", "#FamilyTravel", "#BusinessTravel", "#EVs"
   ];
 
+  // Filter blog posts based on search term
+  const filteredPosts = blogPosts.filter(post =>
+    post.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="blog">
-        <ReTitle  title='Rentizo | Blog'/>
+      <ReTitle title='Rentizo | Blog' />
       <div className="w-11/12 mx-auto">
         {/* Header */}
         <motion.div
@@ -138,69 +165,120 @@ const Blog = () => {
               </div>
             </motion.div>
 
-            {/* Blog Posts Slider */}
+            {/* Search Results or Blog Posts Slider */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <Swiper
-                modules={[Navigation, Pagination]}
-                spaceBetween={30}
-                slidesPerView={1}
-                breakpoints={{
-                  640: {
-                    slidesPerView: 1
-                  },
-                  768: {
-                    slidesPerView: 2
-                  }
-                }}
-                navigation
-                pagination={{ clickable: true }}
-                className="blog-slider"
-              >
-                {blogPosts.map((post) => (
-                  <SwiperSlide key={post.id}>
-                    <motion.div
-                      whileHover={{ y: -5 }}
-                      className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden hover:border-primary transition-all h-full"
-                    >
-                      <div className="relative h-48 overflow-hidden group">
-                        <img
-                          src={post.image}
-                          alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute top-4 right-4">
-                          <span className="inline-block px-2 py-1 bg-primary text-white text-xs font-medium rounded">
-                            {post.category}
-                          </span>
+              {searchTerm ? (
+                // Show filtered results when searching
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredPosts.length > 0 ? (
+                    filteredPosts.map((post) => (
+                      <motion.div
+                        key={post.id}
+                        whileHover={{ y: -5 }}
+                        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden hover:border-primary transition-all h-full"
+                      >
+                        <div className="relative h-48 overflow-hidden group">
+                          <img
+                            src={post.image}
+                            alt={post.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute top-4 right-4">
+                            <span className="inline-block px-2 py-1 bg-primary text-white text-xs font-medium rounded">
+                              {post.category}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-6">
-                        <div className="flex items-center gap-4 text-gray-400 text-xs mb-3">
-                          <span className="flex items-center gap-1">
-                            <FaCalendarAlt /> {post.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <FaUser /> {post.author}
-                          </span>
+                        <div className="p-6">
+                          <div className="flex items-center gap-4 text-gray-400 text-xs mb-3">
+                            <span className="flex items-center gap-1">
+                              <FaCalendarAlt /> {post.date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <FaUser /> {post.author}
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">
+                            <a href="#">{post.title}</a>
+                          </h3>
+                          <p className="text-gray-300 mb-4">{post.excerpt}</p>
+                          <a href="#" className="inline-flex items-center text-primary font-medium group">
+                            Read More
+                            <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                          </a>
                         </div>
-                        <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">
-                          <a href="#">{post.title}</a>
-                        </h3>
-                        <p className="text-gray-300 mb-4">{post.excerpt}</p>
-                        <a href="#" className="inline-flex items-center text-primary font-medium group">
-                          Read More
-                          <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                      </div>
-                    </motion.div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-12">
+                      <p className="text-xl text-gray-400">No articles found matching your search.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Show regular slider when not searching
+                <Swiper
+                  modules={[Navigation, Pagination]}
+                  spaceBetween={30}
+                  slidesPerView={1}
+                  breakpoints={{
+                    640: {
+                      slidesPerView: 1
+                    },
+                    768: {
+                      slidesPerView: 2
+                    }
+                  }}
+                  navigation
+                  pagination={{ clickable: true }}
+                  className="blog-slider"
+                >
+                  {blogPosts.map((post) => (
+                    <SwiperSlide key={post.id}>
+                      <motion.div
+                        whileHover={{ y: -5 }}
+                        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden hover:border-primary transition-all h-full"
+                      >
+                        <div className="relative h-48 overflow-hidden group">
+                          <img
+                            src={post.image}
+                            alt={post.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute top-4 right-4">
+                            <span className="inline-block px-2 py-1 bg-primary text-white text-xs font-medium rounded">
+                              {post.category}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-6">
+                          <div className="flex items-center gap-4 text-gray-400 text-xs mb-3">
+                            <span className="flex items-center gap-1">
+                              <FaCalendarAlt /> {post.date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <FaUser /> {post.author}
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">
+                            <a href="#">{post.title}</a>
+                          </h3>
+                          <p className="text-gray-300 mb-4">{post.excerpt}</p>
+                          <a href="#" className="inline-flex items-center text-primary font-medium group">
+                            Read More
+                            <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                          </a>
+                        </div>
+                      </motion.div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              )}
             </motion.div>
           </div>
 
@@ -219,6 +297,8 @@ const Blog = () => {
                   type="text"
                   placeholder="Search articles..."
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500 pl-12"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <svg
                   className="absolute left-4 top-3.5 h-5 w-5 text-gray-500"
@@ -284,19 +364,21 @@ const Blog = () => {
             >
               <h3 className="text-xl font-bold mb-4 text-primary">Newsletter</h3>
               <p className="text-gray-300 mb-4">Subscribe to get updates on new articles and rental tips.</p>
-              <form className="space-y-3">
+              <form className="space-y-3" onSubmit={handleSubscribe}>
                 <input
                   type="email"
                   placeholder="Your email address"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
+                  required
                 />
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg font-semibold"
+                  disabled={subscribing}
                 >
-                  Subscribe
+                  {subscribing ? "Subscribing..." : "Subscribe"}
                 </motion.button>
               </form>
             </motion.div>

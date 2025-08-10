@@ -157,10 +157,10 @@ const LatestDeals = () => {
                                     </div>
 
                                     {/* CTA Button */}
-                                    <button className="mt-6 w-full py-2 bg-gray-700 hover:bg-primary rounded-md font-medium transition-colors duration-300 flex items-center justify-center">
+                                    {/* <button className="mt-6 w-full py-2 bg-gray-700 hover:bg-primary rounded-md font-medium transition-colors duration-300 flex items-center justify-center">
                                         <FaCar className="mr-2" />
                                         Claim Offer
-                                    </button>
+                                    </button> */}
                                 </div>
                             </div>
                         </motion.div>
@@ -168,7 +168,7 @@ const LatestDeals = () => {
                 </motion.div>
 
                 {/* View All CTA */}
-                <motion.div
+                {/* <motion.div
                     className="mt-16 text-center"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
@@ -178,7 +178,7 @@ const LatestDeals = () => {
                     <button className="px-8 py-3 border-2 border-primary text-primary rounded-full font-medium hover:bg-primary hover:text-white transition-all duration-300">
                         View All Offers
                     </button>
-                </motion.div>
+                </motion.div> */}
             </div>
         </section>
     );

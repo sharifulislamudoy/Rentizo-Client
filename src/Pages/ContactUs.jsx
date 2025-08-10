@@ -2,8 +2,14 @@ import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import { FiSend } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router';
+import Swal from 'sweetalert2';
+import { useState } from 'react';
 
 const ContactUs = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
     const contactMethods = [
         {
             icon: <FaPhone className="text-2xl text-primary" />,
@@ -31,9 +37,27 @@ const ContactUs = () => {
         }
     ];
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        // Simulate sending delay
+        setTimeout(() => {
+            setLoading(false);
+            Swal.fire({
+                icon: 'success',
+                title: 'Message Sent!',
+                text: 'Your message has been successfully sent.',
+                confirmButtonColor: '#00BFA6'
+            }).then(() => {
+                navigate('/');
+            });
+        }, 2000);
+    };
+
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="contact">
-            <ReTitle  title='Rentizo | Contact Us'/>
+            <ReTitle title='Rentizo | Contact Us' />
             <div className="w-11/12 mx-auto">
                 {/* Header */}
                 <motion.div 
@@ -70,9 +94,7 @@ const ContactUs = () => {
                                     className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-xl border border-gray-800 hover:border-primary transition-all h-full"
                                 >
                                     <div className="flex items-start gap-4">
-                                        <div className="mt-1">
-                                            {method.icon}
-                                        </div>
+                                        <div className="mt-1">{method.icon}</div>
                                         <div>
                                             <h3 className="text-xl font-bold mb-2">{method.title}</h3>
                                             <p className="text-primary font-medium mb-1">{method.details}</p>
@@ -115,7 +137,7 @@ const ContactUs = () => {
                     >
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 rounded-xl border border-gray-800">
                             <h3 className="text-2xl font-bold mb-6 text-primary">Send Us a Message</h3>
-                            <form className="space-y-6">
+                            <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="name" className="block text-sm font-medium mb-2">Your Name</label>
@@ -124,6 +146,7 @@ const ContactUs = () => {
                                             id="name" 
                                             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                             placeholder="John Doe"
+                                            required
                                         />
                                     </div>
                                     <div>
@@ -133,6 +156,7 @@ const ContactUs = () => {
                                             id="email" 
                                             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                             placeholder="john@example.com"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -143,6 +167,7 @@ const ContactUs = () => {
                                         id="subject" 
                                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                         placeholder="How can we help?"
+                                        required
                                     />
                                 </div>
                                 <div>
@@ -152,16 +177,17 @@ const ContactUs = () => {
                                         rows="5" 
                                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                         placeholder="Tell us about your inquiry..."
+                                        required
                                     ></textarea>
                                 </div>
                                 <motion.button
                                     type="submit"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2"
+                                    disabled={loading}
+                                    className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
-                                    <FiSend className="text-lg" />
-                                    Send Message
+                                    {loading ? 'Sending...' : (<><FiSend className="text-lg" /> Send Message</>)}
                                 </motion.button>
                             </form>
                         </div>
@@ -180,13 +206,12 @@ const ContactUs = () => {
                     <p className="text-lg text-gray-300 mb-6 max-w-2xl mx-auto">
                         Check out our FAQ section for quick answers to common questions about rentals, bookings, and payments.
                     </p>
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white py-2 px-6 rounded-lg font-semibold transition-colors"
+                    <Link
+                        to={'/faq'}
+                        className="bg-transparent border-2 border-primary text-primary hover:text-black py-2 px-6 rounded-lg font-semibold transition-colors"
                     >
                         Visit FAQ Page
-                    </motion.button>
+                    </Link>
                 </motion.div>
             </div>
         </section>

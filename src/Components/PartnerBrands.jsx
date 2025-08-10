@@ -6,37 +6,37 @@ const PartnerBrands = () => {
         {
             id: 1,
             name: "Audi",
-            logo: "https://www.audi.com/content/dam/gbp2/company/logos/audi-logo-2023.svg",
+            logo: "https://i.ibb.co.com/C3tXK47R/Audi.png",
             category: "Luxury Vehicles"
         },
         {
             id: 2,
             name: "BMW",
-            logo: "https://www.bmw.com/content/dam/bmw/marketBMWCOM/bmw_com_logo.svg",
+            logo: "https://i.ibb.co.com/7xsWTRw3/Audi-1.png",
             category: "Performance Cars"
         },
         {
             id: 3,
             name: "Tesla",
-            logo: "https://www.tesla.com/themes/custom/tesla_frontend/assets/tesla_logo_icon.svg",
+            logo: "https://i.ibb.co.com/5xzcsRv8/Audi-2.png",
             category: "Electric Vehicles"
         },
         {
             id: 4,
             name: "Mercedes",
-            logo: "https://www.mercedes-benz.com/content/dam/brandhub/mbsocialcar/mbsocialcar-mercedes-benz-logo.svg",
+            logo: "https://i.ibb.co.com/9Hg6KQFV/Audi-3.png",
             category: "Premium Sedans"
         },
         {
             id: 5,
             name: "Enterprise",
-            logo: "https://www.enterprise.com/content/experience-fragments/ecom/en/footer/master/_jcr_content/root/footer/logo.coreimg.svg",
+            logo: "https://i.ibb.co.com/xqw4YBGc/Audi-4.png",
             category: "Rental Network"
         },
         {
             id: 6,
             name: "Michelin",
-            logo: "https://www.michelin.com/content/dam/michelin/www/logo.svg",
+            logo: "https://i.ibb.co.com/S7XYdfJx/Audi-5.png",
             category: "Tire Partners"
         }
     ];
@@ -110,12 +110,16 @@ const PartnerBrands = () => {
                         >
                             <div className="bg-gray-800 rounded-xl p-6 h-full flex flex-col items-center justify-center border border-gray-700 group-hover:border-primary transition-all duration-300">
                                 {/* Logo */}
-                                <div className="h-16 mb-4 flex items-center">
+                                <div className="h-16 mb-4 flex flex-col items-center">
                                     <img
                                         src={partner.logo}
                                         alt={partner.name}
                                         className="max-h-full max-w-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500"
                                     />
+                                    <div className="text-center mt-4">
+                                        <h4 className="font-bold">{partner.name}</h4>
+                                        <p className="text-sm text-gray-400">{partner.category}</p>
+                                    </div>
                                 </div>
 
                                 {/* Partner Info (appears on hover) */}

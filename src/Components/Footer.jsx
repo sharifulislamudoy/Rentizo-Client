@@ -1,11 +1,24 @@
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaCar, FaArrowUp } from 'react-icons/fa';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { useContext } from 'react';
-import { AuthContext } from '../Provider/AuthProvider';
+import { useState } from 'react';
 
 const Footer = () => {
-    const { user } = useContext(AuthContext);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [subscribed, setSubscribed] = useState(false);
+
+    const handleSubscribe = () => {
+        if (isProcessing || subscribed) return;
+        setIsProcessing(true);
+
+        // Simulate API call delay
+        setTimeout(() => {
+            setIsProcessing(false);
+            setSubscribed(true);
+            // Reset to default after a few seconds
+            setTimeout(() => setSubscribed(false), 3000);
+        }, 2000);
+    };
     const currentYear = new Date().getFullYear();
 
     const scrollToTop = () => {
@@ -105,8 +118,8 @@ const Footer = () => {
                         <ul className="space-y-3">
                             {quickLinks.map((link, index) => (
                                 <motion.li key={index} whileHover={{ x: 5 }}>
-                                    <Link 
-                                        to={link.path} 
+                                    <Link
+                                        to={link.path}
                                         className="text-gray-400 hover:text-primary transition-colors duration-300 text-sm flex items-center"
                                     >
                                         <span className="w-1 h-1 bg-primary rounded-full mr-2"></span>
@@ -135,20 +148,26 @@ const Footer = () => {
                             Subscribe to get updates on new vehicles and special offers.
                         </p>
                         <div className="flex">
-                            <input 
-                                type="email" 
-                                placeholder="Your email" 
+                            <input
+                                type="email"
+                                placeholder="Your email"
                                 className="px-4 py-2 bg-gray-800 text-white rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary w-full text-sm"
+                                disabled={isProcessing || subscribed}
                             />
-                            <button className="bg-gradient-to-r from-primary to-secondary px-4 py-2 rounded-r-md text-white font-medium text-sm hover:opacity-90 transition-opacity">
-                                Subscribe
+                            <button
+                                onClick={handleSubscribe}
+                                className="bg-gradient-to-r from-primary to-secondary px-4 py-2 rounded-r-md text-white font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isProcessing || subscribed}
+                            >
+                                {isProcessing ? "Processing..." : subscribed ? "Thank you!" : "Subscribe"}
                             </button>
                         </div>
                     </motion.div>
+
                 </motion.div>
 
                 {/* Copyright Section */}
-                <motion.div 
+                <motion.div
                     className="pt-8 mt-8 border-t border-gray-800 text-center text-gray-500 text-sm"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}

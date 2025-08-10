@@ -7,9 +7,12 @@ import { AuthContext } from '../Provider/AuthProvider';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import LoadingSpinner from '../Utils/LoadingSpinner';
 import { ReTitle } from 're-title';
+import { useNavigate } from 'react-router';
 
 const MyBookings = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -18,14 +21,15 @@ const MyBookings = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
+      fetch(`https://server-car-rental.vercel.app/bookings?email=${user.email}`, {
         credentials: 'include',
       })
         .then((res) => res.json())
         .then((data) => {
           setBookings(data);
           setLoading(false);
-        });
+        })
+        .catch(() => setLoading(false));
     }
   }, [user?.email]);
 
@@ -45,7 +49,7 @@ const MyBookings = () => {
     if (confirm.isConfirmed) {
       try {
         const res = await fetch(
-          `http://localhost:3000/bookings/${id}?email=${user?.email}`,
+          `https://server-car-rental.vercel.app/bookings/${id}?email=${user?.email}`,
           {
             method: 'DELETE',
             credentials: 'include',
@@ -74,15 +78,45 @@ const MyBookings = () => {
   };
 
   const handleEdit = (booking) => {
+    const todayStr = getTodayString();
+    const tomorrowStr = getTomorrowString();
+
     setSelectedBooking(booking);
-    setStartDate(booking.startDate?.split('T')[0] || '');
-    setEndDate(booking.endDate?.split('T')[0] || '');
+
+    setStartDate(
+      booking.startDate && !isNaN(new Date(booking.startDate).getTime())
+        ? new Date(booking.startDate).toISOString().split('T')[0]
+        : todayStr
+    );
+
+    setEndDate(
+      booking.endDate && !isNaN(new Date(booking.endDate).getTime())
+        ? new Date(booking.endDate).toISOString().split('T')[0]
+        : tomorrowStr
+    );
+
     document.getElementById('edit_modal').showModal();
   };
 
   const handleUpdate = async () => {
+    if (!startDate || !endDate) {
+      toast.error('Please select valid dates.', {
+        position: 'top-right',
+        theme: 'dark',
+      });
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      toast.error('Start date cannot be after end date.', {
+        position: 'top-right',
+        theme: 'dark',
+      });
+      return;
+    }
+
     const res = await fetch(
-      `http://localhost:3000/bookings/${selectedBooking._id}?email=${user?.email}`,
+      `https://server-car-rental.vercel.app/bookings/${selectedBooking._id}?email=${user?.email}`,
       {
         method: 'PATCH',
         credentials: 'include',
@@ -109,14 +143,61 @@ const MyBookings = () => {
     }
   };
 
+  // Helpers for date defaults & formatting
+  const getTodayString = () => new Date().toISOString().split('T')[0];
+
+  const getTomorrowString = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
+  const formatDateSafeWithFallback = (date, fallback) => {
+    if (!date) {
+      if (fallback === 'today') return new Date().toLocaleDateString();
+      if (fallback === 'tomorrow') {
+        const t = new Date();
+        t.setDate(t.getDate() + 1);
+        return t.toLocaleDateString();
+      }
+      return 'N/A';
+    }
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      if (fallback === 'today') return new Date().toLocaleDateString();
+      if (fallback === 'tomorrow') {
+        const t = new Date();
+        t.setDate(t.getDate() + 1);
+        return t.toLocaleDateString();
+      }
+      return 'N/A';
+    }
+    return d.toLocaleDateString();
+  };
+
+  const calculateDays = (start, end) => {
+    if (!start || !end) return 1;
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) return 1;
+
+    const diff = Math.ceil((endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+  };
+
+  const calculateTotalPrice = (pricePerDay, days) => {
+    const price = parseFloat(pricePerDay);
+    if (isNaN(price) || price <= 0) return 'N/A';
+    return `$${(price * days).toFixed(2)}`;
+  };
+
   const chartData = Array.from(
     bookings.reduce((acc, cur) => {
-      const model = cur.carModel || cur.model;
-      const start = new Date(cur.startDate);
-      const end = new Date(cur.endDate);
-      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
-      const price = parseFloat(cur.pricePerDay || 0) * days;
-      acc.set(model, (acc.get(model) || 0) + price);
+      const model = cur.carModel || cur.model || 'Unknown';
+      const days = calculateDays(cur.startDate, cur.endDate);
+      const pricePerDay = parseFloat(cur.pricePerDay || 0);
+      const totalPrice = pricePerDay > 0 ? pricePerDay * days : 0;
+      acc.set(model, (acc.get(model) || 0) + totalPrice);
       return acc;
     }, new Map()),
     ([model, price]) => ({ model, price: Number(price.toFixed(2)) })
@@ -147,7 +228,7 @@ const MyBookings = () => {
 
         {bookings.length > 0 ? (
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Analytics Section - Left Side */}
+            {/* Analytics Section */}
             <div className="lg:w-1/2 bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-xl">
               <h3 className="text-2xl font-semibold mb-6 text-primary">
                 Booking Analytics
@@ -165,11 +246,7 @@ const MyBookings = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis
-                      dataKey="model"
-                      tick={{ fill: '#9ca3af' }}
-                      tickMargin={10}
-                    />
+                    <XAxis dataKey="model" tick={{ fill: '#9ca3af' }} tickMargin={10} />
                     <YAxis
                       tick={{ fill: '#9ca3af' }}
                       tickFormatter={(value) => `$${value}`}
@@ -183,91 +260,88 @@ const MyBookings = () => {
                       formatter={(value) => [`$${value}`, 'Total Price']}
                       labelStyle={{ color: '#3b82f6', fontWeight: 'bold' }}
                     />
-                    <Bar
-                      dataKey="price"
-                      fill="url(#colorPrice)"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="price" fill="url(#colorPrice)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Bookings List - Right Side */}
+            {/* Bookings List */}
             <div className="lg:w-1/2">
-              <h3 className="text-2xl font-semibold text-primary mb-6">
-                Your Bookings
-              </h3>
+              <h3 className="text-2xl font-semibold text-primary mb-6">Your Bookings</h3>
 
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                {bookings.map((booking) => (
-                  <motion.div
-                    key={booking._id}
-                    whileHover={{ y: -5 }}
-                    className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-all"
-                  >
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold text-white">
-                          {booking.carModel || booking.model}
-                        </h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${booking.status === 'Canceled'
-                            ? 'bg-red-900 text-red-200'
-                            : booking.status === 'Pending'
-                              ? 'bg-amber-900 text-amber-200'
-                              : 'bg-green-900 text-green-200'
-                          }`}>
-                          {booking.status || 'Confirmed'}
-                        </span>
-                      </div>
+                {bookings.map((booking) => {
+                  const days = calculateDays(booking.startDate, booking.endDate);
+                  const totalPrice = calculateTotalPrice(booking.pricePerDay, days);
 
-                      <div className="space-y-3 text-gray-300">
-                        <div className="flex items-center">
-                          <FaCalendarAlt className="mr-3 text-primary" />
-                          <span>
-                            {new Date(booking.startDate).toLocaleDateString()} -{' '}
-                            {new Date(booking.endDate).toLocaleDateString()}
+                  return (
+                    <motion.div
+                      key={booking._id}
+                      whileHover={{ y: -5 }}
+                      className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <div className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="text-xl font-bold text-white">
+                            {booking.carModel || booking.model || 'Unknown Model'}
+                          </h3>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              booking.status === 'Canceled'
+                                ? 'bg-red-900 text-red-200'
+                                : booking.status === 'Pending'
+                                ? 'bg-amber-900 text-amber-200'
+                                : 'bg-green-900 text-green-200'
+                            }`}
+                          >
+                            {booking.status || 'Confirmed'}
                           </span>
                         </div>
 
-                        <div className="flex items-center">
-                          <FaDollarSign className="mr-3 text-primary" />
-                          <span>
-                            {(() => {
-                              const start = new Date(booking.startDate);
-                              const end = new Date(booking.endDate);
-                              const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
-                              const pricePerDay = parseFloat(booking.pricePerDay || 0);
-                              const total = (pricePerDay * days).toFixed(2);
-                              return `$${total} (${days} day${days > 1 ? 's' : ''})`;
-                            })()}
-                          </span>
+                        <div className="space-y-3 text-gray-300">
+                          <div className="flex items-center">
+                            <FaCalendarAlt className="mr-3 text-primary" />
+                            <span>
+                              {formatDateSafeWithFallback(booking.startDate, 'today')} -{' '}
+                              {formatDateSafeWithFallback(booking.endDate, 'tomorrow')}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center">
+                            <FaDollarSign className="mr-3 text-primary" />
+                            <span>
+                              {totalPrice !== 'N/A'
+                                ? `${totalPrice} (${days} day${days > 1 ? 's' : ''})`
+                                : 'N/A'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center">
+                            <FaMapMarkerAlt className="mr-3 text-primary" />
+                            <span>{booking.location || 'Unknown Location'}</span>
+                          </div>
                         </div>
 
-                        <div className="flex items-center">
-                          <FaMapMarkerAlt className="mr-3 text-primary" />
-                          <span>{booking.location}</span>
+                        <div className="mt-6 flex space-x-3">
+                          <button
+                            onClick={() => handleEdit(booking)}
+                            className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium flex items-center justify-center transition"
+                          >
+                            <FaEdit className="mr-2" /> Modify
+                          </button>
+
+                          <button
+                            onClick={() => handleCancel(booking._id)}
+                            className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium flex items-center justify-center transition"
+                          >
+                            <FaTrash className="mr-2" /> Cancel
+                          </button>
                         </div>
                       </div>
-
-                      <div className="mt-6 flex space-x-3">
-                        <button
-                          onClick={() => handleEdit(booking)}
-                          className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium flex items-center justify-center transition"
-                        >
-                          <FaEdit className="mr-2" /> Modify
-                        </button>
-
-                        <button
-                          onClick={() => handleCancel(booking._id)}
-                          className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium flex items-center justify-center transition"
-                        >
-                          <FaTrash className="mr-2" /> Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -275,11 +349,10 @@ const MyBookings = () => {
           <div className="text-center py-16 bg-gray-900 rounded-2xl border border-gray-800">
             <div className="max-w-md mx-auto">
               <FaCar className="mx-auto text-5xl text-gray-600 mb-4" />
-              <h3 className="text-2xl font-semibold text-gray-300 mb-2">
-                No Bookings Yet
-              </h3>
+              <h3 className="text-2xl font-semibold text-gray-300 mb-2">No Bookings Yet</h3>
               <p className="text-gray-500 mb-6">
-                You haven't made any bookings yet. Start exploring our fleet to find your perfect ride.
+                You haven't made any bookings yet. Start exploring our fleet to find your perfect
+                ride.
               </p>
               <button
                 onClick={() => navigate('/cars')}
@@ -298,28 +371,24 @@ const MyBookings = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Start Date
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Start Date</label>
                 <input
                   type="date"
-                  value={startDate}
+                  value={startDate || getTodayString()}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-primary focus:ring-2 focus:ring-primary/50 text-white transition"
-                  min={new Date().toISOString().split('T')[0]}
+                  min={getTodayString()}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  End Date
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">End Date</label>
                 <input
                   type="date"
-                  value={endDate}
+                  value={endDate || getTomorrowString()}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-primary focus:ring-2 focus:ring-primary/50 text-white transition"
-                  min={startDate || new Date().toISOString().split('T')[0]}
+                  min={startDate || getTodayString()}
                 />
               </div>
 
@@ -328,15 +397,13 @@ const MyBookings = () => {
                   <h4 className="font-medium text-gray-300 mb-2">Booking Summary</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="text-gray-400">Start Date:</div>
-                    <div>{new Date(startDate).toLocaleDateString()}</div>
+                    <div>{formatDateSafeWithFallback(startDate, 'today')}</div>
 
                     <div className="text-gray-400">End Date:</div>
-                    <div>{new Date(endDate).toLocaleDateString()}</div>
+                    <div>{formatDateSafeWithFallback(endDate, 'tomorrow')}</div>
 
                     <div className="text-gray-400">Days:</div>
-                    <div>
-                      {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) || 1}
-                    </div>
+                    <div>{calculateDays(startDate, endDate)}</div>
 
                     <div className="text-gray-400">Price per Day:</div>
                     <div>${parseFloat(selectedBooking.pricePerDay || 0).toFixed(2)}</div>
@@ -346,7 +413,7 @@ const MyBookings = () => {
                       $
                       {(
                         parseFloat(selectedBooking.pricePerDay || 0) *
-                        (Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) || 1)
+                        calculateDays(startDate, endDate)
                       ).toFixed(2)}
                     </div>
                   </div>

@@ -57,16 +57,16 @@ const FAQ = () => {
 
     const [selectedCategory, setSelectedCategory] = useState("All");
 
-    const filteredFaqs = selectedCategory === "All" 
-        ? faqs 
+    const filteredFaqs = selectedCategory === "All"
+        ? faqs
         : faqs.filter(faq => faq.category === selectedCategory);
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="faq">
-            <ReTitle title='Rentizo | FAQ'/>
+            <ReTitle title='Rentizo | FAQ' />
             <div className="w-11/12 mx-auto">
                 {/* Header */}
-                <motion.div 
+                <motion.div
                     className="text-center mb-16"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -99,7 +99,7 @@ const FAQ = () => {
                     >
                         All Questions
                     </motion.button>
-                    
+
                     {categories.map((category, index) => (
                         <motion.button
                             key={index}
@@ -188,13 +188,14 @@ const FAQ = () => {
                         >
                             Contact Support
                         </motion.a>
-                        <motion.button
+                        <motion.a
+                            href='/contact-us'
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white py-3 px-8 rounded-lg font-semibold transition-colors"
+                            className="bg-transparent border-2 border-primary text-primary  hover:text-white py-3 px-8 rounded-lg font-semibold transition-colors"
                         >
                             Live Chat
-                        </motion.button>
+                        </motion.a>
                     </div>
                 </motion.div>
             </div>
