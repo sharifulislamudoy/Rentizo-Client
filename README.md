@@ -1,12 +1,21 @@
-# React + Vite
+# Rentizo Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend application for Rentizo, a modern rental management platform.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Before you begin, ensure you have the following installed:
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/) (v16.x or higher recommended)
+- [npm](https://www.npmjs.com/) (v8.x or higher) or [Yarn](https://yarnpkg.com/) (v1.22.x or higher)
+- [Git](https://git-scm.com/)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Getting Started
+
+Follow these steps to set up the Rentizo client on your local machine:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/rentizo/client.git
+cd client
