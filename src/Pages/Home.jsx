@@ -1,11 +1,13 @@
 import { ReTitle } from 're-title';
 import Banner from '../Components/Banner';
-import LuxuryExperienceSection from '../Components/LuxuryExperienceSection';
 import RecentListings from '../Components/RecentListings';
-import SpecialOffers from '../Components/SpecialOffers';
-import StatsSection from '../Components/StatsSection';
 import useScrollToTop from '../Utils/UseScrollToTop';
 import PopularDestinations from '../Components/PopularDestinations';
+import HowItWorks from '../Components/HowItWorks';
+import LatestDeals from '../Components/LatestDeals';
+import StatsAchievements from '../Components/StatsAchievements';
+import PartnerBrands from '../Components/PartnerBrands';
+import NewsletterSignup from '../Components/NewsletterSignup';
 
 const Home = () => {
   useScrollToTop(); // Scroll to top when this page loads
@@ -16,9 +18,11 @@ const Home = () => {
       <Banner />
       <PopularDestinations />
       <RecentListings />
-      <LuxuryExperienceSection />
-      <SpecialOffers />
-      <StatsSection />
+      <HowItWorks />
+      <LatestDeals />
+      <StatsAchievements />
+      <PartnerBrands />
+      <NewsletterSignup />
     </div>
   );
 };

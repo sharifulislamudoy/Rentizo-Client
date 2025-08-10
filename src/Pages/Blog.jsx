@@ -5,6 +5,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { ReTitle } from 're-title';
 
 const Blog = () => {
   const blogPosts = [
@@ -78,6 +79,7 @@ const Blog = () => {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="blog">
+        <ReTitle  title='Rentizo | Blog'/>
       <div className="w-11/12 mx-auto">
         {/* Header */}
         <motion.div

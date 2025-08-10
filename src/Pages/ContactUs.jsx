@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { ReTitle } from 're-title';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import { FiSend } from 'react-icons/fi';
 
@@ -32,6 +33,7 @@ const ContactUs = () => {
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="contact">
+            <ReTitle  title='Rentizo | Contact Us'/>
             <div className="w-11/12 mx-auto">
                 {/* Header */}
                 <motion.div 

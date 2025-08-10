@@ -90,10 +90,11 @@ const RecentListings = () => {
                         <motion.div
                             key={car._id || i}
                             custom={i}
-                            initial="hidden"
-                            animate="visible"
-                            whileHover="hover"
                             variants={cardVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            whileHover="hover"
+                            viewport={{ once: true, amount: 0.2 }}
                             className="group relative overflow-hidden rounded-2xl shadow-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700"
                         >
                             {/* Favorite button */}
@@ -157,9 +158,9 @@ const RecentListings = () => {
                                             </>
                                         )}
                                     </span>
-                                        <Link to={`/car-details/${car._id}`} className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all">
-                                            View Details
-                                        </Link>
+                                    <Link to={`/car-details/${car._id}`} className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all">
+                                        View Details
+                                    </Link>
                                 </div>
                             </div>
                         </motion.div>

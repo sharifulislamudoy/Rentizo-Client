@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { ReTitle } from 're-title';
 import CountUp from 'react-countup';
 import { FaCar, FaShieldAlt, FaHandshake, FaMapMarkerAlt } from 'react-icons/fa';
 
@@ -58,6 +59,7 @@ const AboutUs = () => {
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white">
+            <ReTitle  title='Rentizo | About'/>
             <div className="w-11/12 mx-auto">
                 {/* Hero Section */}
                 <motion.div

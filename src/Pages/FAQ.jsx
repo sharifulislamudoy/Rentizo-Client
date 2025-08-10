@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useState } from 'react';
+import { ReTitle } from 're-title';
 
 const FAQ = () => {
     const [activeIndex, setActiveIndex] = useState(null);
@@ -62,6 +63,7 @@ const FAQ = () => {
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="faq">
+            <ReTitle title='Rentizo | FAQ'/>
             <div className="w-11/12 mx-auto">
                 {/* Header */}
                 <motion.div 

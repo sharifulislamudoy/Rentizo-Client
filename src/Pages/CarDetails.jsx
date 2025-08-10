@@ -1,9 +1,10 @@
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
-import { FaCar, FaGasPump, FaMapMarkerAlt, FaStar, FaCheckCircle } from 'react-icons/fa';
+import { FaCar, FaGasPump, FaMapMarkerAlt, FaStar, FaCheckCircle, FaInfoCircle, FaCogs, FaComments, FaHeadset } from 'react-icons/fa';
 import { AuthContext } from '../Provider/AuthProvider';
+import { ReTitle } from 're-title';
 
 const CarDetails = () => {
   const { user } = useContext(AuthContext);
@@ -12,6 +13,7 @@ const CarDetails = () => {
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userBookings, setUserBookings] = useState([]);
+  const [activeTab, setActiveTab] = useState('description');
   const alreadyBooked = userBookings.some(booking => booking.carId === id);
 
   useEffect(() => {
@@ -113,6 +115,7 @@ const CarDetails = () => {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white">
+      <ReTitle title={`Rentizo | ${car.carModel}`} />
       <div className="w-11/12 mx-auto">
         {/* Header */}
         <motion.div
@@ -143,7 +146,7 @@ const CarDetails = () => {
         </motion.div>
 
         {/* Main Content */}
-        <div className="flex flex-col lg:flex-row gap-12">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Car Image */}
           <motion.div
             className="lg:w-1/2"
@@ -151,14 +154,40 @@ const CarDetails = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="relative rounded-2xl overflow-hidden border border-gray-700">
+            <div className="relative rounded-2xl overflow-hidden border border-gray-700 shadow-lg">
               <img
                 src={car.image}
                 alt={car.carModel}
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                <div className="text-xl font-bold">${car.pricePerDay}<span className="text-gray-400 text-sm font-normal"> / day</span></div>
+                <div className="text-2xl font-bold text-primary">${car.pricePerDay}<span className="text-gray-400 text-sm font-normal"> / day</span></div>
+              </div>
+            </div>
+
+            {/* Quick Specs */}
+            <div className="mt-8 bg-gray-800 rounded-xl p-6 border border-gray-700">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <FaCogs className="text-primary" />
+                <span>Quick Specifications</span>
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-400 text-sm">Type</p>
+                  <p className="font-medium">{car.type || 'Sedan'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Transmission</p>
+                  <p className="font-medium">{car.transmission || 'Automatic'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Fuel</p>
+                  <p className="font-medium">{car.fuelType || 'Gasoline'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Seats</p>
+                  <p className="font-medium">{car.seats || '5'}</p>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -170,70 +199,230 @@ const CarDetails = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-gray-900 rounded-2xl p-8 border border-gray-700">
-              <h3 className="text-2xl font-bold mb-6 text-primary">Vehicle Details</h3>
-
-              {/* Description */}
-              <div className="mb-8">
-                <h4 className="text-lg font-semibold mb-3 text-gray-300">Description</h4>
-                <p className="text-gray-400">{car.description}</p>
+            <div className="bg-gray-950 rounded-2xl overflow-hidden border border-gray-700 shadow-lg">
+              {/* Tabs */}
+              <div className="flex border-b border-gray-700 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                <button
+                  onClick={() => setActiveTab('description')}
+                  className={`flex-shrink-0 py-4 px-4 text-center font-medium flex items-center justify-center gap-2 ${activeTab === 'description' ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'}`}
+                >
+                  <FaInfoCircle />
+                  Description
+                </button>
+                <button
+                  onClick={() => setActiveTab('specs')}
+                  className={`flex-shrink-0 py-4 px-4 text-center font-medium flex items-center justify-center gap-2 ${activeTab === 'specs' ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'}`}
+                >
+                  <FaCogs />
+                  Specifications
+                </button>
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`flex-shrink-0 py-4 px-4 text-center font-medium flex items-center justify-center gap-2 ${activeTab === 'reviews' ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'}`}
+                >
+                  <FaComments />
+                  Reviews
+                </button>
+                <button
+                  onClick={() => setActiveTab('support')}
+                  className={`flex-shrink-0 py-4 px-4 text-center font-medium flex items-center justify-center gap-2 ${activeTab === 'support' ? 'text-primary border-b-2 border-primary' : 'text-gray-400 hover:text-white'}`}
+                >
+                  <FaHeadset />
+                  Support
+                </button>
               </div>
 
-              {/* Features */}
-              {Array.isArray(car.features) && car.features.length > 0 && (
-                <div className="mb-8">
-                  <h4 className="text-lg font-semibold mb-3 text-gray-300">Features</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {car.features.map((feature, index) => (
-                      <span key={index} className="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Owner Info */}
-              <div className="mb-8 p-4 bg-gray-700 rounded-lg">
-                <h4 className="text-lg font-semibold mb-2 text-gray-300">Owner Information</h4>
-                <p className="text-gray-400"><span className="font-medium">Name:</span> {car.addedBy?.name || "Not specified"}</p>
-                <p className="text-gray-400"><span className="font-medium">Contact:</span> {car.addedBy?.email || "Not specified"}</p>
+              {/* Tab Content */}
+              <div className="p-6">
+                {/* Description Tab */}
+                {activeTab === 'description' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="text-xl font-bold mb-4">About This Vehicle</h3>
+                    <p className="text-gray-300 mb-6">{car.description}</p>
+
+                    {Array.isArray(car.features) && car.features.length > 0 && (
+                      <>
+                        <h4 className="text-lg font-semibold mb-3 text-gray-300">Key Features</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                          {car.features.map((feature, index) => (
+                            <div key={index} className="flex items-center">
+                              <div className="w-2 h-2 rounded-full bg-primary mr-2"></div>
+                              <span className="text-gray-300">{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* Specifications Tab */}
+                {activeTab === 'specs' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="text-xl font-bold mb-6">Technical Specifications</h3>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800 p-4 rounded-lg">
+                        <h4 className="font-semibold text-gray-300 mb-2">Performance</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-gray-400 text-sm">Engine</p>
+                            <p className="font-medium">{car.engine || '2.0L Turbo'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Horsepower</p>
+                            <p className="font-medium">{car.horsepower || '250 HP'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">0-60 mph</p>
+                            <p className="font-medium">{car.acceleration || '6.2s'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Top Speed</p>
+                            <p className="font-medium">{car.topSpeed || '140 mph'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800 p-4 rounded-lg">
+                        <h4 className="font-semibold text-gray-300 mb-2">Dimensions</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-gray-400 text-sm">Length</p>
+                            <p className="font-medium">{car.length || '186 in'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Width</p>
+                            <p className="font-medium">{car.width || '72 in'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Height</p>
+                            <p className="font-medium">{car.height || '58 in'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Weight</p>
+                            <p className="font-medium">{car.weight || '3,500 lbs'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Reviews Tab */}
+                {activeTab === 'reviews' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="text-xl font-bold mb-6">Customer Reviews</h3>
+                    <div className="space-y-6">
+                      {car.reviews && car.reviews.length > 0 ? (
+                        car.reviews.map((review, index) => (
+                          <div key={index} className="bg-gray-800 p-4 rounded-lg">
+                            <div className="flex items-center mb-2">
+                              <div className="flex items-center mr-4">
+                                {[...Array(5)].map((_, i) => (
+                                  <FaStar key={i} className={`${i < review.rating ? 'text-yellow-400' : 'text-gray-500'} mr-1`} />
+                                ))}
+                              </div>
+                              <span className="font-medium">{review.user}</span>
+                              <span className="text-gray-400 text-sm ml-auto">{review.date}</span>
+                            </div>
+                            <p className="text-gray-300">{review.comment}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-gray-400">No reviews yet. Be the first to review!</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Support Tab */}
+                {activeTab === 'support' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="text-xl font-bold mb-6">Support & Contact</h3>
+                    <div className="space-y-6">
+                      <div className="bg-gray-800 p-6 rounded-lg">
+                        <h4 className="font-semibold text-lg mb-4">Owner Information</h4>
+                        <div className="space-y-3">
+                          <p className="flex items-center">
+                            <span className="text-gray-400 w-24">Name:</span>
+                            <span className="font-medium">{car.addedBy?.name || "Not specified"}</span>
+                          </p>
+                          <p className="flex items-center">
+                            <span className="text-gray-400 w-24">Email:</span>
+                            <span className="font-medium">{car.addedBy?.email || "Not specified"}</span>
+                          </p>
+                          <p className="flex items-center">
+                            <span className="text-gray-400 w-24">Phone:</span>
+                            <span className="font-medium">{car.addedBy?.phone || "Not provided"}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800 p-6 rounded-lg">
+                        <h4 className="font-semibold text-lg mb-4">Need Help?</h4>
+                        <p className="text-gray-300 mb-4">Our customer support team is available 24/7 to assist you with any questions.</p>
+                        <Link to={'/contact-us'} className="bg-primary hover:bg-primary/90 text-white py-2 px-6 rounded-lg font-medium transition-colors">
+                          Contact Support
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </div>
+            </div>
 
-              {/* Booking Button */}
-              <div className="mt-6">
-                {user ? (
+            {/* Booking Button */}
+            <div className="mt-8">
+              {user ? (
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleBooking(car)}
+                  disabled={alreadyBooked || car.availability !== "Available"}
+                  className={`w-full py-4 px-6 rounded-xl font-bold text-white transition-all text-lg ${alreadyBooked
+                    ? "bg-gray-800 cursor-not-allowed"
+                    : car.availability !== "Available"
+                      ? "bg-red-600 cursor-not-allowed"
+                      : "bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/30"}`}
+                >
+                  {alreadyBooked
+                    ? "Already Booked"
+                    : car.availability !== "Available"
+                      ? "Currently Unavailable"
+                      : "Book This Vehicle"}
+                </motion.button>
+              ) : (
+                <div className="text-center bg-gray-800 p-6 rounded-xl border border-gray-700">
+                  <p className="text-gray-400 mb-4">Please login to book this vehicle</p>
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleBooking(car)}
-                    disabled={alreadyBooked || car.availability !== "Available"}
-                    className={`w-full py-3 px-6 rounded-xl font-bold text-white transition-all ${alreadyBooked 
-                      ? "bg-gray-600 cursor-not-allowed" 
-                      : car.availability !== "Available" 
-                        ? "bg-red-600 cursor-not-allowed" 
-                        : "bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/30"}`}
+                    onClick={() => navigate('/login')}
+                    className="bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-xl font-bold hover:shadow-lg hover:shadow-primary/30 transition-all"
                   >
-                    {alreadyBooked 
-                      ? "Already Booked" 
-                      : car.availability !== "Available" 
-                        ? "Currently Unavailable" 
-                        : "Book This Vehicle"}
+                    Login to Book
                   </motion.button>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-gray-400 mb-4">Please login to book this vehicle</p>
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => navigate('/login')}
-                      className="bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-xl font-bold hover:shadow-lg hover:shadow-primary/30 transition-all"
-                    >
-                      Login to Book
-                    </motion.button>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

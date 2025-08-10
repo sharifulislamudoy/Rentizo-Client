@@ -11,6 +11,7 @@ import {
   FaCar,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import { ReTitle } from "re-title";
 
 const AvailableCars = () => {
   const [allCars, setAllCars] = useState([]);
@@ -93,7 +94,8 @@ const AvailableCars = () => {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white min-h-screen">
-      <div className="w-11/12 mx-auto max-w-7xl">
+      <ReTitle title="Rentizo | Available Cars"/>
+      <div className="w-11/12 mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold">
