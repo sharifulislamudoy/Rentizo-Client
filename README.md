@@ -45,16 +45,21 @@ This combination of technologies enables Rentizo to deliver a scalable, maintain
 
 ## Installation
 
-1. Clone the repository:
+1. Clone the repository (client side):
    ```bash
    git clone https://github.com/sharifulislamudoy/Rentizo-Client
    cd Rentizo-Client
 
-2. Install dependencies and run
+2. Clone the repository (server side):
+   ```bash
+   git clone https://github.com/sharifulislamudoy/Rentizo-Server
+   cd Rentizo-Server
+   
+4. Install dependencies and run
    ```bash
    npm install
    npm run dev
-   http://localhost:5173/
+   nodemon index.js
 
 ## Usage
 
