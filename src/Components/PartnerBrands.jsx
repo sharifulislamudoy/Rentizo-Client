@@ -147,14 +147,14 @@ const PartnerBrands = () => {
                                 Our collaborations with top automotive brands ensure you get access to the latest models,
                                 premium features, and exclusive deals unavailable elsewhere.
                             </p>
-                            <div className="flex space-x-4 flex-col md:flex-row">
+                            {/* <div className="flex space-x-4 flex-col md:flex-row">
                                 <button className="px-6 py-2 bg-primary rounded-full font-medium flex items-center">
                                     Become a Partner <FaArrowRight className="ml-2" />
                                 </button>
                                 <button className="px-6 py-2 border border-gray-600 rounded-full font-medium flex items-center hover:border-primary transition-colors">
                                     View All <FaArrowRight className="ml-2" />
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                         <div className="md:w-1/2 bg-gray-700 rounded-xl overflow-hidden">
                             <img

@@ -2,8 +2,45 @@ import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import BannerImg from '../assets/Banner1.png';
 import CountUp from 'react-countup';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Banner = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [results, setResults] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Fetch matches from backend
+    const fetchMatches = async (query) => {
+        if (!query.trim()) {
+            setResults([]);
+            return;
+        }
+        try {
+            setIsLoading(true);
+            const { data } = await axios.get("http://localhost:3000/cars");
+
+            const filtered = data.filter(car =>
+                car.location.toLowerCase().includes(query.toLowerCase()) ||
+                car.carModel.toLowerCase().includes(query.toLowerCase())
+            );
+
+            setResults(filtered);
+        } catch (error) {
+            console.error("Error fetching cars:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Debounce search
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            fetchMatches(searchTerm);
+        }, 300);
+        return () => clearTimeout(delayDebounce);
+    }, [searchTerm]);
+
     return (
         <div className="relative w-full h-[80vh] overflow-hidden">
             {/* Modern layered background */}
@@ -84,9 +121,12 @@ const Banner = () => {
                         transition={{ delay: 0.5 }}
                         className="flex flex-col sm:flex-row gap-3 mb-8"
                     >
-                        <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg p-0.5 border border-white/20 flex">
+                        {/* Search box wrapper */}
+                        <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg p-0.5 border border-white/20 flex relative z-50">
                             <input
                                 type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Search location or brand..."
                                 className="flex-1 bg-transparent border-none text-white placeholder-white/50 px-3 py-2 sm:px-4 sm:py-2.5 text-sm focus:outline-none"
                             />
@@ -95,7 +135,30 @@ const Banner = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </button>
+
+                            {/* Dropdown results */}
+                            {searchTerm && results.length > 0 && (
+                                <div className="absolute top-full left-0 w-full bg-gray-950 text-primary rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                                    {results.map((car) => (
+                                        <Link
+                                            key={car._id}
+                                            to={`/car-details/${car._id}`}
+                                            className="block px-4 py-2 hover:bg-primary/10"
+                                        >
+                                            {car.carModel} - {car.location}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* No results */}
+                            {searchTerm && !isLoading && results.length === 0 && (
+                                <div className="absolute top-full left-0 w-full bg-gray-950 rounded-b-lg shadow-lg px-4 py-2 z-50">
+                                    No cars found
+                                </div>
+                            )}
                         </div>
+
                         <Link to="/available-cars" className="flex-shrink-0">
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
@@ -114,7 +177,7 @@ const Banner = () => {
                         transition={{ delay: 0.7 }}
                         className="grid grid-cols-2 sm:grid-cols-4 gap-3"
                     >
-                        {[
+                        {[ 
                             { value: 500, suffix: "+", label: "Vehicles" },
                             { value: 24, suffix: "/7", label: "Support" },
                             { value: 5, suffix: "★", label: "Rated" },
@@ -132,25 +195,6 @@ const Banner = () => {
                         ))}
                     </motion.div>
                 </div>
-
-                {/* Scroll indicator */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
-                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/50 flex flex-col items-center"
-                >
-                    <span className="text-xs mb-1">Scroll down</span>
-                    <motion.div
-                        animate={{ y: [0, 8, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="h-4"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                        </svg>
-                    </motion.div>
-                </motion.div>
             </motion.div>
         </div>
     );
