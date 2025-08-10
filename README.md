@@ -27,6 +27,7 @@ This combination of technologies enables Rentizo to deliver a scalable, maintain
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
+- [Live-Link](https://rentizo.web.app/)
 
 ---
 
