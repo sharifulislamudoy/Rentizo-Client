@@ -1,12 +1,109 @@
-# React + Vite
+# Rentizo Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
 
-Currently, two official plugins are available:
+Rentizo is a modern, fully responsive rental management platform client application built with React. It provides a seamless and user-friendly experience for users to browse available vehicles, book rentals, and manage their bookings efficiently. The platform supports multiple user roles including customers, car owners, and administrators, each with tailored dashboards and features.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The application is designed with performance, accessibility, and smooth animations in mind, ensuring an engaging experience across devices — from desktops to smartphones.
 
-## Expanding the ESLint configuration
+### Technologies Used
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Rentizo client leverages a robust and modern tech stack, including:
+
+- **React.js** for building interactive user interfaces
+- **React Router** for dynamic routing and navigation
+- **Tailwind CSS** and **DaisyUI** for utility-first styling and component design
+- **Framer Motion** for smooth animations and transitions
+- **React Icons** for scalable iconography
+- **Axios** for handling HTTP requests to backend APIs
+
+This combination of technologies enables Rentizo to deliver a scalable, maintainable, and visually appealing rental platform.
+
+
+---
+
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Live-Link](https://rentizo.web.app/)
+
+---
+
+## Features
+
+- User authentication (signup, login, logout)
+- Browse and search available rental cars
+- Booking management and history
+- Responsive design for mobile and desktop
+- Interactive dashboards for users, car owners, and admins
+- Real-time notifications and alerts
+- Integration with backend APIs for car and booking data
+
+---
+
+## Installation
+
+1. Clone the repository (client side):
+   ```bash
+   git clone https://github.com/sharifulislamudoy/Rentizo-Client
+   cd Rentizo-Client
+
+2. Clone the repository (server side):
+   ```bash
+   git clone https://github.com/sharifulislamudoy/Rentizo-Server
+   cd Rentizo-Server
+   
+4. Install dependencies and run
+   ```bash
+   npm install
+   npm run dev
+   nodemon index.js
+
+## Usage
+
+After setting up and running the development server locally (`npm start` or `yarn start`), you can use the Rentizo client as follows:
+
+1. **Browse Available Cars**  
+   - On the homepage, view featured and available rental cars.
+   - Use search and filter options to find cars by location, type, price, or availability.
+
+2. **User Authentication**  
+   - Register a new account or log in using your credentials.
+   - Use social login options if enabled (Google, Facebook, etc.).
+
+3. **Book a Car**  
+   - Select a car you want to rent.
+   - Choose rental dates and confirm your booking.
+   - View your active and past bookings in your user dashboard.
+
+4. **Manage Bookings**  
+   - Modify or cancel existing bookings from your dashboard.
+   - Receive notifications and reminders for upcoming bookings.
+
+5. **Owner Dashboard (if applicable)**  
+   - For car owners, add and manage your listed vehicles.
+   - Track bookings and earnings.
+
+6. **Admin Dashboard (if applicable)**  
+   - Manage users, bookings, and vehicle listings.
+   - Access analytics and reports.
+
+---
+
+## Configuration
+
+To properly run the Rentizo client, you need to configure environment variables and API endpoints.
+
+### Environment Variables
+
+Create a `.env.local` file in the root of the project and add the following variables:
+
+   ```env.local
+   VITE_FIREBASE_API_KEY=AIzaSyBPUnnxdmmlc3WdnGG1ZzOPzZXTges0Yzg
+   VITE_FIREBASE_AUTH_DOMAIN=rentizo.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=rentizo
+   VITE_FIREBASE_STORAGE_BUCKET=rentizo.firebasestorage.app
+   VITE_FIREBASE_MESSAGING_SENDER_ID=220054668724
+   VITE_FIREBASE_APP_ID=1:220054668724:web:d56afbc3aedefc68dd9ee1
