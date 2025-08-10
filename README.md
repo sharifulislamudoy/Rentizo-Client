@@ -1,9 +1,5 @@
 # Rentizo Client
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)  
-[![Build Status](https://travis-ci.org/username/rentizo-client.svg?branch=master)](https://travis-ci.org/username/rentizo-client)  
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-
 ## Overview
 
 Rentizo is a modern, responsive rental management platform client application built with React. It enables users to browse, book, and manage vehicle rentals seamlessly with a clean, intuitive UI.
@@ -51,5 +47,36 @@ Rentizo is a modern, responsive rental management platform client application bu
    npm install
    npm run dev
    http://localhost:5173/
+
+## Usage
+
+After setting up and running the development server locally (`npm start` or `yarn start`), you can use the Rentizo client as follows:
+
+1. **Browse Available Cars**  
+   - On the homepage, view featured and available rental cars.
+   - Use search and filter options to find cars by location, type, price, or availability.
+
+2. **User Authentication**  
+   - Register a new account or log in using your credentials.
+   - Use social login options if enabled (Google, Facebook, etc.).
+
+3. **Book a Car**  
+   - Select a car you want to rent.
+   - Choose rental dates and confirm your booking.
+   - View your active and past bookings in your user dashboard.
+
+4. **Manage Bookings**  
+   - Modify or cancel existing bookings from your dashboard.
+   - Receive notifications and reminders for upcoming bookings.
+
+5. **Owner Dashboard (if applicable)**  
+   - For car owners, add and manage your listed vehicles.
+   - Track bookings and earnings.
+
+6. **Admin Dashboard (if applicable)**  
+   - Manage users, bookings, and vehicle listings.
+   - Access analytics and reports.
+
+---
 
 
