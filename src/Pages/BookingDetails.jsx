@@ -211,7 +211,7 @@ const BookingDetails = () => {
                                         <div className="w-0.5 h-12 bg-gray-600"></div>
                                     </div>
                                     <div>
-                                        <p className="font-medium">Booking Confirmed</p>
+                                        <p className="font-medium">Booking {booking.status}</p>
                                         <p className="text-sm text-gray-400">{formatDate(booking.bookingDate)}</p>
                                     </div>
                                 </div>
@@ -278,24 +278,6 @@ const BookingDetails = () => {
                                     <span className="text-right">{formatDate(booking.bookingDate)}</span>
                                 </div>
                             </div>
-                        </motion.div>
-
-                        {/* Action Buttons */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="flex flex-col sm:flex-row gap-4 mt-8"
-                        >
-                            <button className="px-6 py-3 bg-primary hover:bg-primary-dark rounded-lg font-medium transition flex-1">
-                                Payment
-                            </button>
-                            <button className="px-6 py-3 bg-transparent border border-primary text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition flex-1">
-                                Contact Owner
-                            </button>
-                            {booking.status === 'Confirmed' && (
-                                <button className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition flex-1">
-                                    Cancel Booking
-                                </button>
-                            )}
                         </motion.div>
 
                         {/* Help Card */}
