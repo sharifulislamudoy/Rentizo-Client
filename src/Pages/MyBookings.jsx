@@ -21,7 +21,7 @@ const MyBookings = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://server-car-rental.vercel.app/bookings?email=${user.email}`, {
+      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
         credentials: 'include',
       })
         .then((res) => res.json())
@@ -49,7 +49,7 @@ const MyBookings = () => {
     if (confirm.isConfirmed) {
       try {
         const res = await fetch(
-          `https://server-car-rental.vercel.app/bookings/${id}?email=${user?.email}`,
+          `http://localhost:3000/bookings/${id}?email=${user?.email}`,
           {
             method: 'DELETE',
             credentials: 'include',
@@ -116,7 +116,7 @@ const MyBookings = () => {
     }
 
     const res = await fetch(
-      `https://server-car-rental.vercel.app/bookings/${selectedBooking._id}?email=${user?.email}`,
+      `http://localhost:3000/bookings/${selectedBooking._id}?email=${user?.email}`,
       {
         method: 'PATCH',
         credentials: 'include',
@@ -287,16 +287,18 @@ const MyBookings = () => {
                             {booking.carModel || booking.model || 'Unknown Model'}
                           </h3>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              booking.status === 'Canceled'
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${booking.status === 'Canceled'
                                 ? 'bg-red-900 text-red-200'
                                 : booking.status === 'Pending'
-                                ? 'bg-amber-900 text-amber-200'
-                                : 'bg-green-900 text-green-200'
-                            }`}
+                                  ? 'bg-yellow-900 text-yellow-200'
+                                  : booking.status === 'Confirmed'
+                                    ? 'bg-green-900 text-green-200'
+                                    : 'bg-gray-800 text-gray-200'
+                              }`}
                           >
                             {booking.status || 'Confirmed'}
                           </span>
+
                         </div>
 
                         <div className="space-y-3 text-gray-300">
@@ -319,7 +321,7 @@ const MyBookings = () => {
 
                           <div className="flex items-center">
                             <FaMapMarkerAlt className="mr-3 text-primary" />
-                            <span>{booking.location || 'Unknown Location'}</span>
+                            <span>{booking.pickupLocation.address || 'Unknown Location'}</span>
                           </div>
                         </div>
 

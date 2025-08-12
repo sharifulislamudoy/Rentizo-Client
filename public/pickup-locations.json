@@ -1,0 +1,102 @@
+[
+  {
+    "_id": "1",
+    "name": "Dhaka Airport",
+    "address": "Hazrat Shahjalal International Airport, Dhaka"
+  },
+  {
+    "_id": "2",
+    "name": "Banani",
+    "address": "Banani, Dhaka"
+  },
+  {
+    "_id": "3",
+    "name": "Gulshan",
+    "address": "Gulshan, Dhaka"
+  },
+  {
+    "_id": "4",
+    "name": "Dhanmondi",
+    "address": "Dhanmondi, Dhaka"
+  },
+  {
+    "_id": "5",
+    "name": "Motijheel",
+    "address": "Motijheel Commercial Area, Dhaka"
+  },
+  {
+    "_id": "6",
+    "name": "Uttara",
+    "address": "Uttara, Dhaka"
+  },
+  {
+    "_id": "7",
+    "name": "Mirpur",
+    "address": "Mirpur, Dhaka"
+  },
+  {
+    "_id": "8",
+    "name": "Chittagong Airport",
+    "address": "Shah International Airport, Chittagong"
+  },
+  {
+    "_id": "9",
+    "name": "Pahartali",
+    "address": "Pahartali, Chittagong"
+  },
+  {
+    "_id": "10",
+    "name": "Agrabad",
+    "address": "Agrabad Commercial Area, Chittagong"
+  },
+  {
+    "_id": "11",
+    "name": "Khulna Bus Terminal",
+    "address": "Khulna Central Bus Terminal, Khulna"
+  },
+  {
+    "_id": "12",
+    "name": "Sylhet Airport",
+    "address": "Osmani International Airport, Sylhet"
+  },
+  {
+    "_id": "13",
+    "name": "Rajshahi Bus Stand",
+    "address": "Rajshahi Central Bus Stand, Rajshahi"
+  },
+  {
+    "_id": "14",
+    "name": "Barishal Bus Terminal",
+    "address": "Barishal Bus Terminal, Barishal"
+  },
+  {
+    "_id": "15",
+    "name": "Comilla Bus Terminal",
+    "address": "Comilla Bus Terminal, Comilla"
+  },
+  {
+    "_id": "16",
+    "name": "Narayanganj",
+    "address": "Narayanganj District, Dhaka Division"
+  },
+  {
+    "_id": "17",
+    "name": "Gazipur",
+    "address": "Gazipur District, Dhaka Division"
+  },
+  {
+    "_id": "18",
+    "name": "Tangail",
+    "address": "Tangail District, Dhaka Division"
+  },
+  {
+    "_id": "19",
+    "name": "Mymensingh",
+    "address": "Mymensingh District, Dhaka Division"
+  },
+  {
+    "_id": "20",
+    "name": "Cox's Bazar Bus Terminal",
+    "address": "Cox's Bazar Bus Terminal, Cox's Bazar"
+  }
+]

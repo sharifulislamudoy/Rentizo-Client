@@ -38,8 +38,9 @@ const Navbar = () => {
     // User-specific links (will appear in drawer)
     const userLinks = user
         ? [
-            { name: 'Add Car', path: '/add-car' },
-            { name: 'My Cars', path: '/my-cars' },
+            // { name: 'Add Car', path: '/add-car' },
+            // { name: 'My Cars', path: '/my-cars' },
+            { name: 'DashBoard', path: '/user/dashboard' },
             { name: 'My Bookings', path: '/my-bookings' },
         ]
         : [];
@@ -57,7 +58,7 @@ const Navbar = () => {
 
         if (result.isConfirmed) {
             try {
-                await axios.post('https://server-car-rental.vercel.app/logout', {}, { withCredentials: true });
+                await axios.post('http://localhost:3000/logout', {}, { withCredentials: true });
                 await logOut();
                 Swal.fire('Logged out!', 'You have been logged out.', 'success');
                 document.getElementById('my-drawer-4')?.click();

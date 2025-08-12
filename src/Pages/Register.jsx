@@ -45,7 +45,7 @@ const Register = () => {
   const saveUserToDB = async (name, email) => {
     try {
       await axios.post(
-        "https://server-car-rental.vercel.app/users",
+        "http://localhost:3000/users",
         { name, email },
         { withCredentials: true }
       );

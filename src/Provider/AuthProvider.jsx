@@ -22,7 +22,7 @@ const AuthProvider = ({ children }) => {
     const saveUserToDB = async (name, email) => {
         try {
             await axios.post(
-                "https://server-car-rental.vercel.app/users",
+                "http://localhost:3000/users",
                 { name, email }, // role defaults to 'user' in backend
                 { withCredentials: true }
             );
@@ -77,7 +77,7 @@ const AuthProvider = ({ children }) => {
 
                     // Request JWT
                     await axios.post(
-                        "https://server-car-rental.vercel.app/jwt",
+                        "http://localhost:3000/jwt",
                         { email: refreshedUser.email },
                         { withCredentials: true }
                     );

@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
-import { FaCar, FaGasPump, FaMapMarkerAlt, FaStar, FaCheckCircle, FaInfoCircle, FaCogs, FaComments, FaHeadset } from 'react-icons/fa';
+import { FaCar, FaGasPump, FaMapMarkerAlt, FaStar, FaCheckCircle, FaInfoCircle, FaCogs, FaComments, FaHeadset, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { AuthContext } from '../Provider/AuthProvider';
 import { ReTitle } from 're-title';
 
@@ -14,20 +14,33 @@ const CarDetails = () => {
   const [loading, setLoading] = useState(true);
   const [userBookings, setUserBookings] = useState([]);
   const [activeTab, setActiveTab] = useState('description');
+  const [pickupLocations, setPickupLocations] = useState([]);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const alreadyBooked = userBookings.some(booking => booking.carId === id);
+
+  // Check if car is wishlisted on component mount
+  useEffect(() => {
+    const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    setIsWishlisted(wishlist.includes(id));
+  }, [id]);
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://server-car-rental.vercel.app/bookings?email=${user.email}`, {
+      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
         credentials: 'include'
       })
         .then(res => res.json())
         .then(data => setUserBookings(data));
     }
+
+    // Fetch pickup locations
+    fetch('/pickup-locations.json')
+      .then(res => res.json())
+      .then(data => setPickupLocations(data));
   }, [user]);
 
   useEffect(() => {
-    fetch(`https://server-car-rental.vercel.app/cars/${id}`)
+    fetch(`http://localhost:3000/cars/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCar(data);
@@ -35,52 +48,148 @@ const CarDetails = () => {
       });
   }, [id]);
 
+  const toggleWishlist = () => {
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    
+    if (isWishlisted) {
+      wishlist = wishlist.filter(carId => carId !== id);
+      Swal.fire({
+        title: 'Removed!',
+        text: 'Car removed from your wishlist',
+        icon: 'success',
+        confirmButtonColor: '#3B82F6',
+        background: '#1F2937',
+        color: '#FFFFFF',
+        timer: 1500
+      });
+    } else {
+      wishlist.push(id);
+      Swal.fire({
+        title: 'Added!',
+        text: 'Car added to your wishlist',
+        icon: 'success',
+        confirmButtonColor: '#3B82F6',
+        background: '#1F2937',
+        color: '#FFFFFF',
+        timer: 1500
+      });
+    }
+    
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    setIsWishlisted(!isWishlisted);
+  };
+
   const handleBooking = async (car) => {
     const result = await Swal.fire({
       title: 'Confirm Booking',
       html: `
-        <div class="text-left">
-          <p class="mb-2"><strong class="text-primary">Car:</strong> ${car.carModel}</p>
-          <p class="mb-2"><strong class="text-primary">Price/Day:</strong> $${car.pricePerDay}</p>
-          <p class="mb-2"><strong class="text-primary">Location:</strong> ${car.location}</p>
+      <div class="text-left">
+        <p class="mb-2"><strong style="color:#60A5FA;">Car:</strong> ${car.carModel}</p>
+        <p class="mb-2"><strong style="color:#60A5FA;">Price/Day:</strong> $${car.pricePerDay}</p>
+        <p class="mb-2"><strong style="color:#60A5FA;">Location:</strong> ${car.location}</p>
+
+        <div class="flex flex-wrap gap-4">
+          <div class="flex flex-col w-full sm:w-1/2 gap-1">
+            <label for="startDate" class="mb-2">
+              <strong style="color:#60A5FA;">Start Date:</strong>
+            </label>
+            <input
+              type="date"
+              id="startDate"
+              name="startDate"
+              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            />
+          </div>
+
+          <div class="flex flex-col w-full sm:w-1/2">
+            <label for="endDate" class="mb-2">
+              <strong style="color:#60A5FA;">End Date:</strong>
+            </label>
+            <input
+              type="date"
+              id="endDate"
+              name="endDate"
+              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            />
+          </div>
         </div>
-      `,
+
+        <div class="mt-4">
+          <label for="pickupLocation" class="mb-2 block">
+            <strong style="color:#60A5FA;">Pickup Location:</strong>
+          </label>
+          <select
+            id="pickupLocation"
+            name="pickupLocation"
+            class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            required
+          >
+            <option class="border bg-gray-950" value="">Select a pickup location</option>
+            ${pickupLocations.map(location => `
+              <option class="border bg-gray-950" value="${location._id}">${location.name} - ${location.address}</option>
+            `).join('')}
+          </select>
+        </div>
+      </div>
+    `,
       icon: 'info',
       showCancelButton: true,
       confirmButtonText: 'Confirm Booking',
       confirmButtonColor: '#3B82F6',
       background: '#1F2937',
-      color: '#FFFFFF'
+      color: '#FFFFFF',
+      preConfirm: () => {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const pickupLocation = document.getElementById('pickupLocation').value;
+
+        if (!startDate || !endDate || !pickupLocation) {
+          Swal.showValidationMessage('Please fill all required fields');
+          return false;
+        }
+
+        if (new Date(startDate) > new Date(endDate)) {
+          Swal.showValidationMessage('End date must be after start date');
+          return false;
+        }
+
+        return { startDate, endDate, pickupLocation };
+      }
     });
 
     if (result.isConfirmed) {
+      const selectedLocation = pickupLocations.find(loc => loc._id === result.value.pickupLocation);
+      
       const bookingInfo = {
         carId: car._id,
         carModel: car.carModel,
+        carImage: car.image,
         pricePerDay: car.pricePerDay,
         location: car.location,
         userEmail: user?.email,
         userName: user?.displayName,
         bookingDate: new Date().toISOString(),
+        startDate: result.value.startDate,
+        endDate: result.value.endDate,
+        pickupLocation: {
+          id: selectedLocation._id,
+          name: selectedLocation.name,
+          address: selectedLocation.address
+        },
+        status: 'Pending'
       };
 
       try {
-        const response = await fetch(`https://server-car-rental.vercel.app/bookings?email=${user?.email}`, {
+        const response = await fetch(`http://localhost:3000/bookings?email=${user?.email}`, {
           method: 'POST',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(bookingInfo),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to save booking');
-        }
+        if (!response.ok) throw new Error('Failed to save booking');
 
-        await fetch(`https://server-car-rental.vercel.app/bookings/${car._id}/increment`, {
-          method: 'PATCH',
-        });
+        await fetch(`http://localhost:3000/bookings/${car._id}/increment`, { method: 'PATCH' });
 
         await Swal.fire({
           title: 'Booked!',
@@ -160,6 +269,19 @@ const CarDetails = () => {
                 alt={car.carModel}
                 className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
               />
+              <div className="absolute top-4 right-4">
+                <button 
+                  onClick={toggleWishlist}
+                  className="p-3 bg-gray-900/80 rounded-full backdrop-blur-sm hover:bg-gray-800 transition-colors"
+                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  {isWishlisted ? (
+                    <FaHeart className="text-red-500 text-xl" />
+                  ) : (
+                    <FaRegHeart className="text-white text-xl hover:text-red-500 transition-colors" />
+                  )}
+                </button>
+              </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
                 <div className="text-2xl font-bold text-primary">${car.pricePerDay}<span className="text-gray-400 text-sm font-normal"> / day</span></div>
               </div>
@@ -231,7 +353,6 @@ const CarDetails = () => {
                   Support
                 </button>
               </div>
-
 
               {/* Tab Content */}
               <div className="p-6">

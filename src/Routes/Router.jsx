@@ -15,6 +15,10 @@ import AboutUs from "../Pages/AboutUs";
 import ContactUs from "../Pages/ContactUs";
 import Blog from "../Pages/Blog";
 import FAQ from "../Pages/FAQ";
+import AdminDashboard from "../Components/DashBoards/AdminDashboard";
+import CarOwnerDashboard from "../Components/DashBoards/CarOwnerDashBoard";
+import UserDashboard from "../Components/DashBoards/UserDashBoard";
+import BookingDetails from "../Pages/BookingDetails";
 
 export const router = createBrowserRouter([
   {
@@ -67,6 +71,10 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/booking-details/:id',
+        Component: BookingDetails
+      },
+      {
         path: "/holiday-deal",
         Component: HolidayDeal,
       },
@@ -88,4 +96,16 @@ export const router = createBrowserRouter([
       }
     ],
   },
+  {
+    path: '/admin/dashboard',
+    Component: AdminDashboard
+  },
+  {
+    path: '/car-owner/dashboard',
+    Component: CarOwnerDashboard
+  },
+  {
+    path: '/user/dashboard',
+    Component: UserDashboard
+  }
 ]);
