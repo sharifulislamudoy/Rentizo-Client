@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
-import { FaCar, FaHeart, FaUserCog, FaHistory, FaHeadset, FaBars, FaTimes, FaGasPump } from 'react-icons/fa';
+import { FaCar, FaHeart, FaUserCog, FaHistory, FaHeadset, FaBars, FaTimes, FaGasPump, FaHome } from 'react-icons/fa';
 import { AuthContext } from '../../Provider/AuthProvider';
 import LoadingSpinner from '../../Utils/LoadingSpinner';
 import { Link } from 'react-router';
@@ -265,7 +265,7 @@ const UserDashboard = () => {
                                                 )}
                                                 <button className='bg-green-600 px-4 py-2 rounded-lg transition'>
                                                     <Link>
-                                                    Payment
+                                                        Payment
                                                     </Link>
                                                 </button>
                                             </div>
@@ -607,6 +607,13 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                             <nav className="space-y-2">
+                                <Link
+                                    to="/"
+                                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition text-gray-400 hover:bg-gray-800 hover:text-white"
+                                >
+                                    <span><FaHome /></span>
+                                    <span>Home Page</span>
+                                </Link>
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
@@ -643,6 +650,14 @@ const UserDashboard = () => {
                                     </div>
                                 </div>
                                 <nav className="space-y-2">
+                                    <Link
+                                        to="/"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition text-gray-400 hover:bg-gray-800 hover:text-white"
+                                    >
+                                        <span><FaHome /></span>
+                                        <span>Home Page</span>
+                                    </Link>
                                     {tabs.map(tab => (
                                         <button
                                             key={tab.id}
