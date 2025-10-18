@@ -5,24 +5,37 @@ import { FaCar, FaHeart, FaUserCog, FaHistory, FaHeadset, FaBars, FaTimes, FaGas
 import { AuthContext } from '../../Provider/AuthProvider';
 import LoadingSpinner from '../../Utils/LoadingSpinner';
 import { Link } from 'react-router';
+import { toast } from 'react-toastify';
 
 const UserDashboard = () => {
-    const { user } = useContext(AuthContext)
+    const { user, updateUserProfile } = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState('bookings');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [bookings, setBookings] = useState([]);
     const [wishlist, setWishlist] = useState([]);
     const [loading, setLoading] = useState(true);
     const [wishlistLoading, setWishlistLoading] = useState(false);
+    const [profileData, setProfileData] = useState({
+        name: '',
+        email: '',
+        phoneNumber: '',
+        address: '',
+        state: '',
+        zipCode: '',
+        dob: '',
+        gender: '',
+        bio: ''
+    });
+    const [profileLoading, setProfileLoading] = useState(false);
 
     useEffect(() => {
         if (user?.email) {
+            // Fetch user bookings
             fetch(`http://localhost:3000/bookings?email=${user.email}`, {
                 credentials: 'include',
             })
                 .then((res) => res.json())
                 .then((data) => {
-                    // Calculate total price for each booking
                     const bookingsWithCalculatedPrice = data.map(booking => {
                         const startDate = new Date(booking.startDate);
                         const endDate = new Date(booking.endDate);
@@ -35,11 +48,33 @@ const UserDashboard = () => {
                         };
                     });
                     setBookings(bookingsWithCalculatedPrice);
+                })
+                .catch(() => setLoading(false));
+
+            // Fetch user profile data
+            fetch(`http://localhost:3000/users/${user.email}`, {
+                credentials: 'include',
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        setProfileData({
+                            name: data.name || user.displayName || '',
+                            email: data.email || user.email || '',
+                            phoneNumber: data.phoneNumber || '',
+                            address: data.address || '',
+                            state: data.state || '',
+                            zipCode: data.zipCode || '',
+                            dob: data.dob || '',
+                            gender: data.gender || '',
+                            bio: data.bio || ''
+                        });
+                    }
                     setLoading(false);
                 })
                 .catch(() => setLoading(false));
         }
-    }, [user?.email]);
+    }, [user]);
 
     useEffect(() => {
         if (activeTab === 'wishlist') {
@@ -49,7 +84,6 @@ const UserDashboard = () => {
 
     const fetchWishlistData = () => {
         setWishlistLoading(true);
-        // Get wishlist from localStorage
         const wishlistIds = JSON.parse(localStorage.getItem('wishlist')) || [];
 
         if (wishlistIds.length === 0) {
@@ -58,11 +92,9 @@ const UserDashboard = () => {
             return;
         }
 
-        // Fetch all cars data
         fetch('http://localhost:3000/cars')
             .then(res => res.json())
             .then(allCars => {
-                // Filter cars that are in wishlist
                 const wishlistCars = allCars.filter(car => wishlistIds.includes(car._id));
                 setWishlist(wishlistCars);
                 setWishlistLoading(false);
@@ -76,16 +108,59 @@ const UserDashboard = () => {
         let wishlistIds = JSON.parse(localStorage.getItem('wishlist')) || [];
         wishlistIds = wishlistIds.filter(id => id !== carId);
         localStorage.setItem('wishlist', JSON.stringify(wishlistIds));
-        fetchWishlistData(); // Refresh the wishlist
+        fetchWishlistData();
     };
 
-    // Helper function to format date as "DD MMM YYYY"
     const formatDate = (date) => {
         return date.toLocaleDateString('en-US', {
             day: 'numeric',
             month: 'short',
             year: 'numeric'
         });
+    };
+
+    const handleProfileChange = (e) => {
+        const { name, value } = e.target;
+        setProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+        setProfileLoading(true);
+
+        try {
+            // Update in Firebase if name changed
+            if (profileData.name !== user.displayName) {
+                await updateUserProfile({
+                    displayName: profileData.name
+                });
+            }
+
+            // Update in MongoDB
+            const response = await fetch(`http://localhost:3000/users/${user.email}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(profileData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success('Profile updated successfully');
+            } else {
+                throw new Error(data.message || 'Failed to update profile');
+            }
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setProfileLoading(false);
+        }
     };
 
     const paymentHistory = [
@@ -188,6 +263,11 @@ const UserDashboard = () => {
                                                         Cancel Booking
                                                     </button>
                                                 )}
+                                                <button className='bg-green-600 px-4 py-2 rounded-lg transition'>
+                                                    <Link>
+                                                    Payment
+                                                    </Link>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -246,6 +326,7 @@ const UserDashboard = () => {
                                             <button className="w-full py-2 bg-primary hover:bg-primary-dark rounded-lg transition">
                                                 <Link
                                                     to={`/car-details/${car._id}`}
+                                                    className="block w-full"
                                                 >
                                                     Book Now
                                                 </Link>
@@ -262,125 +343,154 @@ const UserDashboard = () => {
                     <div>
                         <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                {/* Profile Media */}
-                                <div className="md:col-span-2">
-                                    <label className="block text-gray-400 mb-2">Profile Picture</label>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full bg-gray-700 overflow-hidden">
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-2xl">
-                                                    {user.displayName?.charAt(0).toUpperCase() || 'U'}
-                                                </div>
-                                            )}
+                            <form onSubmit={handleProfileSubmit}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    {/* Profile Media */}
+                                    <div className="md:col-span-2">
+                                        <label className="block text-gray-400 mb-2">Profile Picture</label>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-16 h-16 rounded-full bg-gray-700 overflow-hidden">
+                                                {user.photoURL ? (
+                                                    <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-2xl">
+                                                        {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                id="profile-picture"
+                                            />
+                                            <label htmlFor="profile-picture" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition cursor-pointer">
+                                                Change Photo
+                                            </label>
                                         </div>
+                                    </div>
+                                    {/* Personal Information */}
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Full Name</label>
                                         <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            id="profile-picture"
+                                            type="text"
+                                            name="name"
+                                            value={profileData.name}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
-                                        <label htmlFor="profile-picture" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition cursor-pointer">
-                                            Change Photo
-                                        </label>
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Email</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={profileData.email}
+                                            onChange={handleProfileChange}
+                                            disabled
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            name="phoneNumber"
+                                            value={profileData.phoneNumber}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                    </div>
+
+                                    {/* Location Information */}
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Address</label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={profileData.address}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">State/Province</label>
+                                        <input
+                                            type="text"
+                                            name="state"
+                                            value={profileData.state}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Zip/Postal Code</label>
+                                        <input
+                                            type="text"
+                                            name="zipCode"
+                                            value={profileData.zipCode}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                    </div>
+
+                                    {/* Personal Details */}
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Date of Birth</label>
+                                        <input
+                                            type="date"
+                                            name="dob"
+                                            value={profileData.dob}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 mb-2">Gender</label>
+                                        <select
+                                            name="gender"
+                                            value={profileData.gender}
+                                            onChange={handleProfileChange}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        >
+                                            <option value="">Prefer not to say</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Bio/About */}
+                                    <div className="md:col-span-2">
+                                        <label className="block text-gray-400 mb-2">Bio/About</label>
+                                        <textarea
+                                            name="bio"
+                                            value={profileData.bio}
+                                            onChange={handleProfileChange}
+                                            rows="3"
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="Tell us about yourself..."
+                                        ></textarea>
                                     </div>
                                 </div>
-                                {/* Personal Information */}
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Full Name</label>
-                                    <input
-                                        type="text"
-                                        defaultValue={user.displayName || 'Enter Your Full Name'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Email</label>
-                                    <input
-                                        type="email"
-                                        defaultValue={user.email || 'Enter Your Email'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Phone Number</label>
-                                    <input
-                                        type="tel"
-                                        defaultValue={user.phoneNumber || 'Enter Your Phone Number'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
 
-                                {/* Location Information */}
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Address</label>
-                                    <input
-                                        type="text"
-                                        defaultValue={user.address || 'Enter Your Address'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">State/Province</label>
-                                    <input
-                                        type="text"
-                                        defaultValue={user.state || 'Not Set'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Zip/Postal Code</label>
-                                    <input
-                                        type="text"
-                                        defaultValue={user.zipCode || 'Not Set'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-
-                                {/* Personal Details */}
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Date of Birth</label>
-                                    <input
-                                        type="date"
-                                        defaultValue={user.dob || 'Enter Your Date of Birth'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Gender</label>
-                                    <select
-                                        defaultValue={user.gender || 'Not Set'}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                <div className="flex justify-between items-center">
+                                    <button
+                                        type="submit"
+                                        className="px-6 py-3 bg-primary hover:bg-primary-dark rounded-lg transition disabled:opacity-50"
+                                        disabled={profileLoading}
                                     >
-                                        <option value="">Prefer not to say</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
-                                    </select>
+                                        {profileLoading ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+                                        onClick={() => window.location.reload()}
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
-
-                                {/* Bio/About */}
-                                <div className="md:col-span-2">
-                                    <label className="block text-gray-400 mb-2">Bio/About</label>
-                                    <textarea
-                                        defaultValue={user.bio || 'Tell Us About Yourself'}
-                                        rows="3"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                        placeholder="Tell us about yourself..."
-                                    ></textarea>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between items-center">
-                                <button className="px-6 py-3 bg-primary hover:bg-primary-dark rounded-lg transition">
-                                    Save Changes
-                                </button>
-                                <button className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                                    Cancel
-                                </button>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 );

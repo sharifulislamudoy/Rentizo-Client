@@ -93,7 +93,7 @@ export const router = createBrowserRouter([
       {
         path: '/faq',
         Component: FAQ
-      }
+      },
     ],
   },
   {
