@@ -579,7 +579,7 @@ const UserDashboard = () => {
 
     return (
         <section className="py-8 bg-black text-white min-h-screen">
-            <ReTitle title="Rentizo | Dashboard" />
+            <ReTitle title="Dashboard" />
             <div className="w-11/12 mx-auto">
                 {/* Mobile menu button */}
                 <div className="md:hidden flex justify-between items-center mb-6">
