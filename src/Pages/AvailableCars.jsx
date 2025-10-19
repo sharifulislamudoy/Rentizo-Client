@@ -119,7 +119,7 @@ const AvailableCars = () => {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white min-h-screen">
-      <ReTitle title="Rentizo | Available Cars" />
+      <ReTitle title="Available Cars" />
       
       {/* Mobile Filter Overlay */}
       <AnimatePresence>

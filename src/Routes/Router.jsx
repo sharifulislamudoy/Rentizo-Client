@@ -19,11 +19,12 @@ import AdminDashboard from "../Components/DashBoards/AdminDashboard";
 import CarOwnerDashboard from "../Components/DashBoards/CarOwnerDashBoard";
 import UserDashboard from "../Components/DashBoards/UserDashBoard";
 import BookingDetails from "../Pages/BookingDetails";
+import Payment from "../Components/Payment";
 
 export const router = createBrowserRouter([
   {
-    path: "/", 
-    Component: Main, 
+    path: "/",
+    Component: Main,
     errorElement: <NotFoundPage />,
     children: [
       {
@@ -31,7 +32,7 @@ export const router = createBrowserRouter([
         Component: Home,
       },
       {
-        path: "/login", 
+        path: "/login",
         Component: Login,
       },
       {
@@ -39,7 +40,7 @@ export const router = createBrowserRouter([
         Component: Register,
       },
       {
-        path: "/add-car", 
+        path: "/add-car",
         element: (
           <PrivateRoute>
             <AddCar />
@@ -55,11 +56,11 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/available-cars", 
+        path: "/available-cars",
         Component: AvailableCars,
       },
       {
-        path: "/car-details/:id", 
+        path: "/car-details/:id",
         element: <CarDetails />,
       },
       {
@@ -79,7 +80,7 @@ export const router = createBrowserRouter([
         Component: HolidayDeal,
       },
       {
-        path:'/about-us',
+        path: '/about-us',
         Component: AboutUs
       },
       {
@@ -94,6 +95,12 @@ export const router = createBrowserRouter([
         path: '/faq',
         Component: FAQ
       },
+      {
+        path: '/payment',
+        element: <PrivateRoute>
+          <Payment />
+        </PrivateRoute>
+      }
     ],
   },
   {

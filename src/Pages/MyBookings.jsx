@@ -357,7 +357,7 @@ const MyBookings = () => {
                 ride.
               </p>
               <button
-                onClick={() => navigate('/cars')}
+                onClick={() => navigate('/available-cars')}
                 className="px-6 py-3 bg-gradient-to-r from-primary to-secondary rounded-lg font-medium text-white hover:opacity-90 transition-opacity"
               >
                 Browse Available Cars

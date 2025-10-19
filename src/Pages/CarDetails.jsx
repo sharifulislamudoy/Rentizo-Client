@@ -50,7 +50,7 @@ const CarDetails = () => {
 
   const toggleWishlist = () => {
     let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-    
+
     if (isWishlisted) {
       wishlist = wishlist.filter(carId => carId !== id);
       Swal.fire({
@@ -74,7 +74,7 @@ const CarDetails = () => {
         timer: 1500
       });
     }
-    
+
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
     setIsWishlisted(!isWishlisted);
   };
@@ -83,58 +83,58 @@ const CarDetails = () => {
     const result = await Swal.fire({
       title: 'Confirm Booking',
       html: `
-      <div class="text-left">
-        <p class="mb-2"><strong style="color:#60A5FA;">Car:</strong> ${car.carModel}</p>
-        <p class="mb-2"><strong style="color:#60A5FA;">Price/Day:</strong> $${car.pricePerDay}</p>
-        <p class="mb-2"><strong style="color:#60A5FA;">Location:</strong> ${car.location}</p>
+    <div class="text-left">
+      <p class="mb-2"><strong style="color:#60A5FA;">Car:</strong> ${car.carModel}</p>
+      <p class="mb-2"><strong style="color:#60A5FA;">Price/Day:</strong> $${car.pricePerDay}</p>
+      <p class="mb-2"><strong style="color:#60A5FA;">Location:</strong> ${car.location}</p>
 
-        <div class="flex flex-wrap gap-4">
-          <div class="flex flex-col w-full sm:w-1/2 gap-1">
-            <label for="startDate" class="mb-2">
-              <strong style="color:#60A5FA;">Start Date:</strong>
-            </label>
-            <input
-              type="date"
-              id="startDate"
-              name="startDate"
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-            />
-          </div>
-
-          <div class="flex flex-col w-full sm:w-1/2">
-            <label for="endDate" class="mb-2">
-              <strong style="color:#60A5FA;">End Date:</strong>
-            </label>
-            <input
-              type="date"
-              id="endDate"
-              name="endDate"
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-            />
-          </div>
+      <div class="flex flex-wrap gap-4">
+        <div class="flex flex-col w-full sm:w-1/2 gap-1">
+          <label for="startDate" class="mb-2">
+            <strong style="color:#60A5FA;">Start Date:</strong>
+          </label>
+          <input
+            type="date"
+            id="startDate"
+            name="startDate"
+            class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+          />
         </div>
 
-        <div class="mt-4">
-          <label for="pickupLocation" class="mb-2 block">
-            <strong style="color:#60A5FA;">Pickup Location:</strong>
+        <div class="flex flex-col w-full sm:w-1/2">
+          <label for="endDate" class="mb-2">
+            <strong style="color:#60A5FA;">End Date:</strong>
           </label>
-          <select
-            id="pickupLocation"
-            name="pickupLocation"
+          <input
+            type="date"
+            id="endDate"
+            name="endDate"
             class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-            required
-          >
-            <option class="border bg-gray-950" value="">Select a pickup location</option>
-            ${pickupLocations.map(location => `
-              <option class="border bg-gray-950" value="${location._id}">${location.name} - ${location.address}</option>
-            `).join('')}
-          </select>
+          />
         </div>
       </div>
-    `,
+
+      <div class="mt-4">
+        <label for="pickupLocation" class="mb-2 block">
+          <strong style="color:#60A5FA;">Pickup Location:</strong>
+        </label>
+        <select
+          id="pickupLocation"
+          name="pickupLocation"
+          class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+          required
+        >
+          <option class="border bg-gray-950" value="">Select a pickup location</option>
+          ${pickupLocations.map(location => `
+            <option class="border bg-gray-950" value="${location._id}">${location.name} - ${location.address}</option>
+          `).join('')}
+        </select>
+      </div>
+    </div>
+  `,
       icon: 'info',
       showCancelButton: true,
-      confirmButtonText: 'Confirm Booking',
+      confirmButtonText: 'Continue to Payment',
       confirmButtonColor: '#3B82F6',
       background: '#1F2937',
       color: '#FFFFFF',
@@ -159,7 +159,7 @@ const CarDetails = () => {
 
     if (result.isConfirmed) {
       const selectedLocation = pickupLocations.find(loc => loc._id === result.value.pickupLocation);
-      
+
       const bookingInfo = {
         carId: car._id,
         carModel: car.carModel,
@@ -176,7 +176,8 @@ const CarDetails = () => {
           name: selectedLocation.name,
           address: selectedLocation.address
         },
-        status: 'Pending'
+        status: 'Pending',
+        paymentStatus: 'Pending'
       };
 
       try {
@@ -189,17 +190,16 @@ const CarDetails = () => {
 
         if (!response.ok) throw new Error('Failed to save booking');
 
-        await fetch(`http://localhost:3000/bookings/${car._id}/increment`, { method: 'PATCH' });
+        const bookingResult = await response.json();
 
-        await Swal.fire({
-          title: 'Booked!',
-          text: 'Your booking has been confirmed.',
-          icon: 'success',
-          confirmButtonColor: '#3B82F6',
-          background: '#1F2937',
-          color: '#FFFFFF'
+        // Navigate to payment page with booking data
+        navigate('/payment', {
+          state: {
+            bookingData: { ...bookingInfo, _id: bookingResult.insertedId },
+            car: car
+          }
         });
-        navigate('/my-bookings');
+
       } catch (error) {
         console.error('Booking failed:', error);
         Swal.fire({
@@ -270,7 +270,7 @@ const CarDetails = () => {
                 className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
               />
               <div className="absolute top-4 right-4">
-                <button 
+                <button
                   onClick={toggleWishlist}
                   className="p-3 bg-gray-900/80 rounded-full backdrop-blur-sm hover:bg-gray-800 transition-colors"
                   aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
