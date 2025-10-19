@@ -21,7 +21,7 @@ const Home = () => {
       <PopularDestinations />
       <RecentListings />
       <HowItWorks />
-      <LatestDeals />
+      {/* <LatestDeals /> */}
       <StatsAchievements />
       <PartnerBrands />
       <NewsletterSignup />

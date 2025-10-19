@@ -9,6 +9,12 @@ import { useState } from 'react';
 const ContactUs = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+    });
 
     const contactMethods = [
         {
@@ -37,27 +43,64 @@ const ContactUs = () => {
         }
     ];
 
-    const handleSubmit = (e) => {
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [id]: value
+        }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate sending delay
-        setTimeout(() => {
-            setLoading(false);
-            Swal.fire({
-                icon: 'success',
-                title: 'Message Sent!',
-                text: 'Your message has been successfully sent.',
-                confirmButtonColor: '#00BFA6'
-            }).then(() => {
-                navigate('/');
+        try {
+            const response = await fetch('http://localhost:3000/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
             });
-        }, 2000);
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Message Sent!',
+                    text: result.message,
+                    confirmButtonColor: '#00BFA6'
+                }).then(() => {
+                    // Reset form
+                    setFormData({
+                        name: '',
+                        email: '',
+                        subject: '',
+                        message: ''
+                    });
+                    navigate('/');
+                });
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to Send',
+                text: error.message || 'Failed to send message. Please try again.',
+                confirmButtonColor: '#00BFA6'
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black text-white" id="contact">
-            <ReTitle title='Rentizo | Contact Us' />
+            <ReTitle title='Contact Us' />
             <div className="w-11/12 mx-auto">
                 {/* Header */}
                 <motion.div 
@@ -144,6 +187,8 @@ const ContactUs = () => {
                                         <input 
                                             type="text" 
                                             id="name" 
+                                            value={formData.name}
+                                            onChange={handleInputChange}
                                             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                             placeholder="John Doe"
                                             required
@@ -154,6 +199,8 @@ const ContactUs = () => {
                                         <input 
                                             type="email" 
                                             id="email" 
+                                            value={formData.email}
+                                            onChange={handleInputChange}
                                             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                             placeholder="john@example.com"
                                             required
@@ -165,6 +212,8 @@ const ContactUs = () => {
                                     <input 
                                         type="text" 
                                         id="subject" 
+                                        value={formData.subject}
+                                        onChange={handleInputChange}
                                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                         placeholder="How can we help?"
                                         required
@@ -175,6 +224,8 @@ const ContactUs = () => {
                                     <textarea 
                                         id="message" 
                                         rows="5" 
+                                        value={formData.message}
+                                        onChange={handleInputChange}
                                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-gray-500"
                                         placeholder="Tell us about your inquiry..."
                                         required
