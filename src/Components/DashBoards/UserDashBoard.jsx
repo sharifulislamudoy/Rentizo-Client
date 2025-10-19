@@ -307,15 +307,23 @@ const UserDashboard = () => {
                                                     View Details
                                                 </Link>
                                                 {booking.status === 'Pending' && (
-                                                    <button className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition">
-                                                        Cancel Booking
+                                                    <button className='bg-green-600 px-4 py-2 rounded-lg transition'>
+                                                        <Link
+                                                            to={'/payment'}
+                                                            state={{
+                                                                bookingData: booking,
+                                                                car: {
+                                                                    _id: booking.carId,
+                                                                    carModel: booking.carModel,
+                                                                    image: booking.carImage,
+                                                                    pricePerDay: booking.pricePerDay,
+                                                                }
+                                                            }}
+                                                        >
+                                                            Payment
+                                                        </Link>
                                                     </button>
                                                 )}
-                                                <button className='bg-green-600 px-4 py-2 rounded-lg transition'>
-                                                    <Link>
-                                                        Payment
-                                                    </Link>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -590,7 +598,7 @@ const UserDashboard = () => {
                         )}
                     </div>
                 );
-  
+
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-6">Support & Feedback</h2>
