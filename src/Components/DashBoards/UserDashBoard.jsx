@@ -13,8 +13,10 @@ const UserDashboard = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [bookings, setBookings] = useState([]);
     const [wishlist, setWishlist] = useState([]);
+    const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [wishlistLoading, setWishlistLoading] = useState(false);
+    const [paymentsLoading, setPaymentsLoading] = useState(false);
     const [profileData, setProfileData] = useState({
         name: '',
         email: '',
@@ -79,6 +81,8 @@ const UserDashboard = () => {
     useEffect(() => {
         if (activeTab === 'wishlist') {
             fetchWishlistData();
+        } else if (activeTab === 'payments') {
+            fetchPaymentsData();
         }
     }, [activeTab]);
 
@@ -102,6 +106,68 @@ const UserDashboard = () => {
             .catch(() => {
                 setWishlistLoading(false);
             });
+    };
+
+    const fetchPaymentsData = () => {
+        setPaymentsLoading(true);
+        // Add email query parameter
+        fetch(`http://localhost:3000/payments?email=${user.email}`, {
+            credentials: 'include',
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // Check if data is an array before using filter
+                if (!Array.isArray(data)) {
+                    console.error('Payments data is not an array:', data);
+                    setPayments([]);
+                    setPaymentsLoading(false);
+                    return;
+                }
+
+                // Filter payments where userEmail matches the current user's email
+                const userPayments = data.filter(payment =>
+                    payment.userEmail === user.email
+                );
+
+                // Format the payment data for display
+                const formattedPayments = userPayments.map(payment => ({
+                    id: payment._id,
+                    paymentIntentId: payment.paymentIntentId,
+                    date: formatPaymentDate(payment.createdAt),
+                    amount: `$${payment.amount}`,
+                    currency: payment.currency.toUpperCase(),
+                    status: payment.status,
+                    carModel: payment.carModel,
+                    bookingDates: `${formatDate(new Date(payment.bookingDetails.startDate))} - ${formatDate(new Date(payment.bookingDetails.endDate))}`,
+                    method: 'Credit Card',
+                    statusColor: payment.status === 'completed' ? 'bg-green-900 text-green-300' :
+                        payment.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
+                            payment.status === 'failed' ? 'bg-red-900 text-red-300' :
+                                'bg-gray-800 text-gray-300'
+                }));
+
+                setPayments(formattedPayments);
+                setPaymentsLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching payments:', error);
+                setPayments([]);
+                setPaymentsLoading(false);
+            });
+    };
+
+    const formatPaymentDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
     };
 
     const removeFromWishlist = (carId) => {
@@ -163,29 +229,11 @@ const UserDashboard = () => {
         }
     };
 
-    const paymentHistory = [
-        {
-            id: 1,
-            date: "15 Oct 2023",
-            amount: "$350",
-            method: "Credit Card",
-            status: "completed"
-        },
-        {
-            id: 2,
-            date: "10 Sep 2023",
-            amount: "$420",
-            method: "PayPal",
-            status: "completed"
-        }
-    ];
-
     const tabs = [
         { id: 'bookings', label: 'Bookings', icon: <FaCar /> },
         { id: 'wishlist', label: 'Wishlist', icon: <FaHeart /> },
         { id: 'profile', label: 'Profile', icon: <FaUserCog /> },
         { id: 'payments', label: 'Payment', icon: <FaHistory /> },
-        { id: 'support', label: 'Support', icon: <FaHeadset /> }
     ];
 
     if (loading) {
@@ -498,42 +546,51 @@ const UserDashboard = () => {
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-6">Payment History</h2>
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-800">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Payment Method</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-800">
-                                        {paymentHistory.map(payment => (
-                                            <tr key={payment.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">{payment.date}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-primary">{payment.amount}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{payment.method}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${payment.status === 'completed' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                                                        }`}>
-                                                        {payment.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <button className="text-primary hover:underline">Invoice</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                        {paymentsLoading ? (
+                            <div className="text-center py-12">
+                                <LoadingSpinner />
                             </div>
-                        </div>
+                        ) : payments.length === 0 ? (
+                            <div className="text-center py-12 bg-gray-900 rounded-xl">
+                                <p className="text-gray-400">No payment history found</p>
+                            </div>
+                        ) : (
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-800">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Car Model</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Booking Dates</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Payment Method</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-800">
+                                            {payments.map(payment => (
+                                                <tr key={payment.id}>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{payment.date}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-primary">{payment.amount}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{payment.carModel}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{payment.bookingDates}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{payment.method}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 py-1 rounded-full text-xs ${payment.statusColor}`}>
+                                                            {payment.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
-            case 'support':
+  
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-6">Support & Feedback</h2>
