@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
-import { FaCar, FaHeart, FaUserCog, FaHistory, FaHeadset, FaBars, FaTimes, FaGasPump, FaHome } from 'react-icons/fa';
+import { FaCar, FaHeart, FaUserCog, FaHistory, FaHeadset, FaBars, FaTimes, FaGasPump, FaHome, FaCrown } from 'react-icons/fa';
 import { AuthContext } from '../../Provider/AuthProvider';
 import LoadingSpinner from '../../Utils/LoadingSpinner';
 import { Link } from 'react-router';
@@ -29,6 +29,8 @@ const UserDashboard = () => {
         bio: ''
     });
     const [profileLoading, setProfileLoading] = useState(false);
+    const [userRole, setUserRole] = useState('user');
+    const [roleUpdating, setRoleUpdating] = useState(false);
 
     useEffect(() => {
         if (user?.email) {
@@ -71,6 +73,8 @@ const UserDashboard = () => {
                             gender: data.gender || '',
                             bio: data.bio || ''
                         });
+                        // Set user role from database
+                        setUserRole(data.role || 'user');
                     }
                     setLoading(false);
                 })
@@ -226,6 +230,33 @@ const UserDashboard = () => {
             toast.error(error.message);
         } finally {
             setProfileLoading(false);
+        }
+    };
+
+    const handleBecomeCarOwner = async () => {
+        setRoleUpdating(true);
+        try {
+            const response = await fetch(`http://localhost:3000/users/${user.email}/role`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ role: 'car-owner' })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setUserRole('car-owner');
+                toast.success('Congratulations! You are now a Car Owner. You can now add your cars for rent.');
+            } else {
+                throw new Error(data.message || 'Failed to update role');
+            }
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setRoleUpdating(false);
         }
     };
 
@@ -398,6 +429,61 @@ const UserDashboard = () => {
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
+                        
+                        {/* Become Car Owner Section */}
+                        {userRole === 'user' && (
+                            <div className="mb-6 bg-gradient-to-r from-purple-900 to-blue-900 rounded-xl border border-purple-700 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-2 flex items-center">
+                                            <FaCrown className="mr-2 text-yellow-400" />
+                                            Become a Car Owner
+                                        </h3>
+                                        <p className="text-gray-300">
+                                            Start earning by renting out your cars. Get access to car management features and reach more customers.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={handleBecomeCarOwner}
+                                        disabled={roleUpdating}
+                                        className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 rounded-lg transition disabled:opacity-50 font-bold flex items-center"
+                                    >
+                                        {roleUpdating ? (
+                                            <>
+                                                <LoadingSpinner size="small" />
+                                                <span className="ml-2">Updating...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaCrown className="mr-2" />
+                                                Become Car Owner
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Current Role Badge */}
+                        {userRole === 'car-owner' && (
+                            <div className="mb-6 bg-gradient-to-r from-green-900 to-emerald-900 rounded-xl border border-green-700 p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-2 flex items-center">
+                                            <FaCrown className="mr-2 text-yellow-400" />
+                                            Car Owner Status
+                                        </h3>
+                                        <p className="text-gray-300">
+                                            You are now a verified car owner. You can add and manage your cars for rent.
+                                        </p>
+                                    </div>
+                                    <span className="px-4 py-2 bg-green-700 text-green-100 rounded-full font-bold">
+                                        Car Owner
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                             <form onSubmit={handleProfileSubmit}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -669,6 +755,9 @@ const UserDashboard = () => {
                                 <img src={user.photoURL} alt="" className='rounded-full w-12 h-12' />
                                 <div>
                                     <h3 className="font-bold text-md">{user.displayName}</h3>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${userRole === 'car-owner' ? 'bg-green-900 text-green-300' : 'bg-blue-900 text-blue-300'}`}>
+                                        {userRole === 'car-owner' ? 'Car Owner' : 'User'}
+                                    </span>
                                 </div>
                             </div>
                             <nav className="space-y-2">
@@ -712,6 +801,9 @@ const UserDashboard = () => {
                                     <img src={user.photoURL} alt="" className='rounded-full w-12 h-12' />
                                     <div>
                                         <h3 className="font-bold">{user.displayName}</h3>
+                                        <span className={`text-xs px-2 py-1 rounded-full ${userRole === 'car-owner' ? 'bg-green-900 text-green-300' : 'bg-blue-900 text-blue-300'}`}>
+                                            {userRole === 'car-owner' ? 'Car Owner' : 'User'}
+                                        </span>
                                     </div>
                                 </div>
                                 <nav className="space-y-2">

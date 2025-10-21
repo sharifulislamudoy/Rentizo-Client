@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
-import { FaCar, FaCarAlt, FaMoneyBillWave, FaUserCog, FaStar, FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaBars } from 'react-icons/fa';
+import { FaCar, FaCarAlt, FaMoneyBillWave, FaUserCog, FaStar, FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaBars, FaHome } from 'react-icons/fa';
 import { MdDashboard, MdReceipt } from 'react-icons/md';
 import { BsCalendarCheck } from 'react-icons/bs';
+import { Link } from 'react-router';
 
 const CarOwnerDashboard = () => {
     const [activeTab, setActiveTab] = useState('myCars');
@@ -107,18 +108,18 @@ const CarOwnerDashboard = () => {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
                             <h2 className="text-2xl font-bold">My Cars</h2>
-                            <button 
+                            <button
                                 onClick={() => setShowAddCarModal(true)}
                                 className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg transition"
                             >
                                 <FaPlus /> <span>Add New Car</span>
                             </button>
                         </div>
-                        
+
                         {myCars.length === 0 ? (
                             <div className="text-center py-12 bg-gray-900 rounded-xl">
                                 <p className="text-gray-400">You haven't listed any cars yet</p>
-                                <button 
+                                <button
                                     onClick={() => setShowAddCarModal(true)}
                                     className="mt-4 px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg transition"
                                 >
@@ -128,20 +129,19 @@ const CarOwnerDashboard = () => {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {myCars.map(car => (
-                                    <motion.div 
+                                    <motion.div
                                         key={car.id}
                                         whileHover={{ y: -5 }}
                                         className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden hover:border-primary transition-all"
                                     >
                                         <div className="relative">
-                                            <img 
-                                                src={car.image} 
-                                                alt={car.model} 
+                                            <img
+                                                src={car.image}
+                                                alt={car.model}
                                                 className="w-full h-48 object-cover"
                                             />
-                                            <span className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs ${
-                                                car.status === 'available' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                                            }`}>
+                                            <span className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs ${car.status === 'available' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
+                                                }`}>
                                                 {car.status}
                                             </span>
                                         </div>
@@ -182,23 +182,23 @@ const CarOwnerDashboard = () => {
                 return (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Bookings Received</h2>
-                        
+
                         {bookings.length === 0 ? (
                             <div className="text-center py-12 bg-gray-900 rounded-xl">
                                 <p className="text-gray-400">No bookings yet</p>
                             </div>
                         ) : (
                             bookings.map(booking => (
-                                <motion.div 
+                                <motion.div
                                     key={booking.id}
                                     whileHover={{ scale: 1.01 }}
                                     className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden"
                                 >
                                     <div className="flex flex-col md:flex-row">
                                         <div className="md:w-1/3">
-                                            <img 
-                                                src={booking.image} 
-                                                alt={booking.car} 
+                                            <img
+                                                src={booking.image}
+                                                alt={booking.car}
                                                 className="w-full h-48 object-cover"
                                             />
                                         </div>
@@ -208,11 +208,10 @@ const CarOwnerDashboard = () => {
                                                     <h3 className="text-xl font-bold">{booking.car}</h3>
                                                     <p className="text-gray-400">Booked by: {booking.user}</p>
                                                 </div>
-                                                <span className={`px-3 py-1 rounded-full text-xs ${
-                                                    booking.status === 'confirmed' ? 'bg-green-900 text-green-300' : 
-                                                    booking.status === 'pending' ? 'bg-yellow-900 text-yellow-300' : 
-                                                    'bg-red-900 text-red-300'
-                                                }`}>
+                                                <span className={`px-3 py-1 rounded-full text-xs ${booking.status === 'confirmed' ? 'bg-green-900 text-green-300' :
+                                                    booking.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
+                                                        'bg-red-900 text-red-300'
+                                                    }`}>
                                                     {booking.status}
                                                 </span>
                                             </div>
@@ -247,7 +246,7 @@ const CarOwnerDashboard = () => {
                 return (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Earnings Summary</h2>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                                 <h3 className="text-gray-400 mb-2">Total Earnings</h3>
@@ -262,7 +261,7 @@ const CarOwnerDashboard = () => {
                                 <p className="text-3xl font-bold text-green-400">{earnings.completedPayouts}</p>
                             </div>
                         </div>
-                        
+
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                             <h3 className="text-xl font-bold mb-4">Recent Transactions</h3>
                             <div className="overflow-x-auto">
@@ -281,9 +280,8 @@ const CarOwnerDashboard = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap">{transaction.date}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-primary">{transaction.amount}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        transaction.status === 'paid' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                                                    }`}>
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${transaction.status === 'paid' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
+                                                        }`}>
                                                         {transaction.status}
                                                     </span>
                                                 </td>
@@ -296,7 +294,7 @@ const CarOwnerDashboard = () => {
                                 </table>
                             </div>
                         </div>
-                        
+
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                             <h3 className="text-xl font-bold mb-4">Payout Settings</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -310,9 +308,9 @@ const CarOwnerDashboard = () => {
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 mb-2">Bank Account Number</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Enter your account number" 
+                                    <input
+                                        type="text"
+                                        placeholder="Enter your account number"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
@@ -327,7 +325,7 @@ const CarOwnerDashboard = () => {
                 return (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Customer Reviews</h2>
-                        
+
                         {reviews.length === 0 ? (
                             <div className="text-center py-12 bg-gray-900 rounded-xl">
                                 <p className="text-gray-400">No reviews yet</p>
@@ -340,9 +338,9 @@ const CarOwnerDashboard = () => {
                                             <h3 className="font-bold">{review.car}</h3>
                                             <div className="flex items-center space-x-1">
                                                 {[...Array(5)].map((_, i) => (
-                                                    <FaStar 
-                                                        key={i} 
-                                                        className={i < review.rating ? "text-yellow-400" : "text-gray-600"} 
+                                                    <FaStar
+                                                        key={i}
+                                                        className={i < review.rating ? "text-yellow-400" : "text-gray-600"}
                                                     />
                                                 ))}
                                             </div>
@@ -353,7 +351,7 @@ const CarOwnerDashboard = () => {
                                 ))}
                             </div>
                         )}
-                        
+
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6 mt-6">
                             <h3 className="text-xl font-bold mb-4">Your Average Rating</h3>
                             <div className="flex items-center space-x-4">
@@ -361,9 +359,9 @@ const CarOwnerDashboard = () => {
                                 <div className="flex flex-col">
                                     <div className="flex items-center space-x-1">
                                         {[...Array(5)].map((_, i) => (
-                                            <FaStar 
-                                                key={i} 
-                                                className={i < 4 ? "text-yellow-400" : "text-gray-600"} 
+                                            <FaStar
+                                                key={i}
+                                                className={i < 4 ? "text-yellow-400" : "text-gray-600"}
                                             />
                                         ))}
                                     </div>
@@ -381,33 +379,33 @@ const CarOwnerDashboard = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
                                     <label className="block text-gray-400 mb-2">Full Name</label>
-                                    <input 
-                                        type="text" 
-                                        defaultValue="Car Owner" 
+                                    <input
+                                        type="text"
+                                        defaultValue="Car Owner"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 mb-2">Email</label>
-                                    <input 
-                                        type="email" 
-                                        defaultValue="owner@example.com" 
+                                    <input
+                                        type="email"
+                                        defaultValue="owner@example.com"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 mb-2">Phone Number</label>
-                                    <input 
-                                        type="tel" 
-                                        defaultValue="+1 234 567 890" 
+                                    <input
+                                        type="tel"
+                                        defaultValue="+1 234 567 890"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 mb-2">Address</label>
-                                    <input 
-                                        type="text" 
-                                        defaultValue="123 Owner St, City" 
+                                    <input
+                                        type="text"
+                                        defaultValue="123 Owner St, City"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
@@ -417,17 +415,17 @@ const CarOwnerDashboard = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-gray-400 mb-2">Business Name</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Your business name (if applicable)" 
+                                        <input
+                                            type="text"
+                                            placeholder="Your business name (if applicable)"
                                             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-gray-400 mb-2">Tax ID</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Tax identification number" 
+                                        <input
+                                            type="text"
+                                            placeholder="Tax identification number"
                                             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
@@ -455,7 +453,7 @@ const CarOwnerDashboard = () => {
                             Owner Dashboard
                         </span>
                     </h1>
-                    <button 
+                    <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="text-gray-400 hover:text-white focus:outline-none"
                     >
@@ -476,15 +474,21 @@ const CarOwnerDashboard = () => {
                                 </div>
                             </div>
                             <nav className="space-y-2">
+                                <Link
+                                    to="/"
+                                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition text-gray-400 hover:bg-gray-800 hover:text-white"
+                                >
+                                    <span><FaHome /></span>
+                                    <span>Home Page</span>
+                                </Link>
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                                            activeTab === tab.id 
-                                                ? 'bg-primary text-white' 
-                                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                                        }`}
+                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${activeTab === tab.id
+                                            ? 'bg-primary text-white'
+                                            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                            }`}
                                     >
                                         <span>{tab.icon}</span>
                                         <span>{tab.label}</span>
@@ -498,7 +502,7 @@ const CarOwnerDashboard = () => {
                     {mobileMenuOpen && (
                         <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-90 p-6 overflow-y-auto">
                             <div className="flex justify-end mb-6">
-                                <button 
+                                <button
                                     onClick={() => setMobileMenuOpen(false)}
                                     className="text-gray-400 hover:text-white"
                                 >
@@ -515,6 +519,13 @@ const CarOwnerDashboard = () => {
                                     </div>
                                 </div>
                                 <nav className="space-y-2">
+                                    <Link
+                                        to="/"
+                                        className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition text-gray-400 hover:bg-gray-800 hover:text-white"
+                                    >
+                                        <span><FaHome /></span>
+                                        <span>Home Page</span>
+                                    </Link>
                                     {tabs.map(tab => (
                                         <button
                                             key={tab.id}
@@ -522,11 +533,10 @@ const CarOwnerDashboard = () => {
                                                 setActiveTab(tab.id);
                                                 setMobileMenuOpen(false);
                                             }}
-                                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                                                activeTab === tab.id 
-                                                    ? 'bg-primary text-white' 
-                                                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                                            }`}
+                                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${activeTab === tab.id
+                                                ? 'bg-primary text-white'
+                                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                                }`}
                                         >
                                             <span>{tab.icon}</span>
                                             <span>{tab.label}</span>
@@ -547,51 +557,51 @@ const CarOwnerDashboard = () => {
             {/* Add Car Modal */}
             {showAddCarModal && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6 w-full max-w-2xl"
                     >
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold">Add New Car</h3>
-                            <button 
+                            <button
                                 onClick={() => setShowAddCarModal(false)}
                                 className="text-gray-400 hover:text-white"
                             >
                                 <FaTimes size={20} />
                             </button>
                         </div>
-                        
+
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-gray-400 mb-2">Make</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 mb-2">Model</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-gray-400 mb-2">Year</label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 mb-2">Price per day ($)</label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
@@ -606,15 +616,15 @@ const CarOwnerDashboard = () => {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div>
                                 <label className="block text-gray-400 mb-2">Description</label>
-                                <textarea 
+                                <textarea
                                     rows="3"
                                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                 ></textarea>
                             </div>
-                            
+
                             <div>
                                 <label className="block text-gray-400 mb-2">Car Photos</label>
                                 <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center">
@@ -624,12 +634,12 @@ const CarOwnerDashboard = () => {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-gray-400 mb-2">Location</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Where is the car located?"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
@@ -643,9 +653,9 @@ const CarOwnerDashboard = () => {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div className="flex justify-end space-x-3 mt-6">
-                                <button 
+                                <button
                                     onClick={() => setShowAddCarModal(false)}
                                     className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
                                 >

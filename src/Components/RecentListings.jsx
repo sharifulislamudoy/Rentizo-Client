@@ -97,17 +97,6 @@ const RecentListings = () => {
                             viewport={{ once: true, amount: 0.2 }}
                             className="group relative overflow-hidden rounded-2xl shadow-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700"
                         >
-                            {/* Favorite button */}
-                            <button
-                                onClick={() => toggleFavorite(car._id)}
-                                className="absolute top-4 right-4 z-20 p-2 bg-gray-900/50 rounded-full hover:bg-primary/80 transition-all"
-                            >
-                                {favorites.includes(car._id) ? (
-                                    <FaHeart className="text-red-500 text-xl" />
-                                ) : (
-                                    <FaRegHeart className="text-white text-xl" />
-                                )}
-                            </button>
 
                             {/* Car image */}
                             <div className="relative h-48 overflow-hidden">
