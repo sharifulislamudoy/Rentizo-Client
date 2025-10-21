@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router';
 import Footer from '../Components/Footer';
 import { ToastContainer } from 'react-toastify';
 import LoadingSpinner from '../Utils/LoadingSpinner';
+import Chatbot from '../Components/Chatbot';
 
 const Main = () => {
     // useLocation hook gives access to the current URL/location object
@@ -41,6 +42,7 @@ const Main = () => {
 
             {/* Container for showing toast notifications */}
             <ToastContainer position="top-right" autoClose={2000} />
+            <Chatbot />
         </div>
     );
 };

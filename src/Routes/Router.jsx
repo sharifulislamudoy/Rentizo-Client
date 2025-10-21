@@ -20,6 +20,7 @@ import CarOwnerDashboard from "../Components/DashBoards/CarOwnerDashBoard";
 import UserDashboard from "../Components/DashBoards/UserDashBoard";
 import BookingDetails from "../Pages/BookingDetails";
 import Payment from "../Components/Payment";
+import CarOwnerRoute from "../Provider/CarOwnerRoute";
 
 export const router = createBrowserRouter([
   {
@@ -42,17 +43,17 @@ export const router = createBrowserRouter([
       {
         path: "/add-car",
         element: (
-          <PrivateRoute>
+          <CarOwnerRoute>
             <AddCar />
-          </PrivateRoute>
+          </CarOwnerRoute>
         ),
       },
       {
         path: "/my-cars",
         element: (
-          <PrivateRoute>
+          <CarOwnerRoute>
             <MyCars />
-          </PrivateRoute>
+          </CarOwnerRoute>
         ),
       },
       {

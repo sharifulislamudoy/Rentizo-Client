@@ -4,7 +4,7 @@ import { ReTitle } from 're-title';
 import { FaCar, FaHeart, FaUserCog, FaHistory, FaHeadset, FaBars, FaTimes, FaGasPump, FaHome, FaCrown } from 'react-icons/fa';
 import { AuthContext } from '../../Provider/AuthProvider';
 import LoadingSpinner from '../../Utils/LoadingSpinner';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
 const UserDashboard = () => {
@@ -31,6 +31,7 @@ const UserDashboard = () => {
     const [profileLoading, setProfileLoading] = useState(false);
     const [userRole, setUserRole] = useState('user');
     const [roleUpdating, setRoleUpdating] = useState(false);
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (user?.email) {
@@ -250,6 +251,7 @@ const UserDashboard = () => {
             if (data.success) {
                 setUserRole('car-owner');
                 toast.success('Congratulations! You are now a Car Owner. You can now add your cars for rent.');
+                navigate('/')
             } else {
                 throw new Error(data.message || 'Failed to update role');
             }
@@ -429,11 +431,11 @@ const UserDashboard = () => {
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
-                        
+
                         {/* Become Car Owner Section */}
                         {userRole === 'user' && (
                             <div className="mb-6 bg-gradient-to-r from-purple-900 to-blue-900 rounded-xl border border-purple-700 p-6">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-start justify-between flex-col gap-4">
                                     <div>
                                         <h3 className="text-xl font-bold mb-2 flex items-center">
                                             <FaCrown className="mr-2 text-yellow-400" />
@@ -682,45 +684,6 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
-                );
-
-                return (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-6">Support & Feedback</h2>
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                            <div className="mb-8">
-                                <h3 className="text-xl font-bold mb-4">Contact Support</h3>
-                                <p className="text-gray-400 mb-4">Our team is available 24/7 to assist you with any questions or issues.</p>
-                                <div className="space-y-2">
-                                    <p><span className="text-gray-400">Email:</span> support@rentizo.com</p>
-                                    <p><span className="text-gray-400">Phone:</span> +1 (800) 123-4567</p>
-                                    <p><span className="text-gray-400">Live Chat:</span> Available on the website</p>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold mb-4">Send Feedback</h3>
-                                <form className="space-y-4">
-                                    <div>
-                                        <label className="block text-gray-400 mb-2">Subject</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-400 mb-2">Message</label>
-                                        <textarea
-                                            rows="4"
-                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                        ></textarea>
-                                    </div>
-                                    <button className="px-6 py-3 bg-primary hover:bg-primary-dark rounded-lg transition">
-                                        Send Message
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
                     </div>
                 );
             default:

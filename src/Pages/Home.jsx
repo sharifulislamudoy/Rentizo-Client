@@ -8,7 +8,6 @@ import LatestDeals from '../Components/LatestDeals';
 import StatsAchievements from '../Components/StatsAchievements';
 import PartnerBrands from '../Components/PartnerBrands';
 import NewsletterSignup from '../Components/NewsletterSignup';
-import Chatbot from '../Components/Chatbot';
 
 const Home = () => {
   useScrollToTop(); // Scroll to top when this page loads
@@ -17,7 +16,6 @@ const Home = () => {
     <div>
       <ReTitle title='Retizo' />
       <Banner />
-      <Chatbot />
       <PopularDestinations />
       <RecentListings />
       <HowItWorks />
