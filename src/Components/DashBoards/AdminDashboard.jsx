@@ -1,49 +1,199 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
 import { FaUsers, FaCar, FaCalendarAlt, FaChartLine, FaCog, FaComments, FaSearch, FaUserSlash, FaUserCheck, FaCheckCircle, FaTimesCircle, FaEdit, FaTrash, FaBars, FaStar, FaTimes } from 'react-icons/fa';
 import { MdDashboard, MdAdminPanelSettings } from 'react-icons/md';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Link } from 'react-router';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('users');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [users, setUsers] = useState([]);
+    const [cars, setCars] = useState([]);
+    const [bookings, setBookings] = useState([]);
+    const [stats, setStats] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState({ show: false, userId: null, userName: '' });
 
-    // Sample data
-    const users = [
-        { id: 1, name: "John Doe", email: "john@example.com", role: "renter", status: "active", joined: "15 Oct 2022" },
-        { id: 2, name: "Car Owner", email: "owner@example.com", role: "owner", status: "active", joined: "20 Sep 2022" },
-        { id: 3, name: "Sarah Smith", email: "sarah@example.com", role: "renter", status: "blocked", joined: "5 Nov 2022" }
-    ];
+    // Fetch data based on active tab
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`http://localhost:3000/admin/${activeTab}`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                const data = await response.json();
+                
+                switch (activeTab) {
+                    case 'users':
+                        setUsers(data);
+                        break;
+                    case 'cars':
+                        setCars(data);
+                        break;
+                    case 'bookings':
+                        setBookings(data);
+                        break;
+                    default:
+                        break;
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const cars = [
-        { id: 1, model: "Toyota Camry 2022", owner: "Car Owner", status: "approved", price: "$85/day", submitted: "10 Oct 2023" },
-        { id: 2, model: "Honda Civic 2021", owner: "Another Owner", status: "pending", price: "$75/day", submitted: "12 Oct 2023" },
-        { id: 3, model: "Tesla Model 3", owner: "EV Enthusiast", status: "rejected", price: "$120/day", submitted: "8 Oct 2023" }
-    ];
+        if (activeTab !== 'analytics' && activeTab !== 'settings') {
+            fetchData();
+        }
+    }, [activeTab]);
 
-    const bookings = [
-        { id: 1, car: "Toyota Camry 2022", user: "John Doe", dates: "15 Oct - 20 Oct 2023", price: "$425", status: "completed" },
-        { id: 2, car: "Honda Civic 2021", user: "Sarah Smith", dates: "25 Nov - 30 Nov 2023", price: "$375", status: "upcoming" },
-        { id: 3, car: "Tesla Model 3", user: "Mike Johnson", dates: "5 Dec - 10 Dec 2023", price: "$600", status: "cancelled" }
-    ];
+    // Fetch stats for analytics
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (activeTab === 'analytics') {
+                try {
+                    const response = await fetch('http://localhost:3000/admin/stats', {
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch stats');
+                    }
+                    
+                    const data = await response.json();
+                    setStats(data);
+                } catch (error) {
+                    console.error('Error fetching stats:', error);
+                }
+            }
+        };
 
-    const feedback = [
-        { id: 1, type: "user", from: "John Doe", about: "Toyota Camry 2022", rating: 5, comment: "Great experience with this car!", status: "approved" },
-        { id: 2, type: "owner", from: "Car Owner", about: "Sarah Smith", rating: 4, comment: "Good renter, but returned car late", status: "pending" }
-    ];
+        fetchStats();
+    }, [activeTab]);
 
-    // Analytics data
-    const stats = {
-        totalUsers: 1243,
-        totalOwners: 287,
-        totalCars: 892,
-        totalBookings: 1567,
-        totalRevenue: "$124,850",
-        monthlyGrowth: "+12%"
+    // Update user role
+    const updateUserRole = async (userId, newRole) => {
+        try {
+            const response = await fetch(`http://localhost:3000/admin/users/${userId}/role`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update user role');
+            }
+
+            // Update local state
+            setUsers(users.map(user => 
+                user._id === userId ? { ...user, role: newRole } : user
+            ));
+
+            alert('User role updated successfully!');
+        } catch (error) {
+            console.error('Error updating user role:', error);
+            alert('Failed to update user role');
+        }
     };
 
+
+    // Delete user
+    const deleteUser = async (userId) => {
+        try {
+            const response = await fetch(`http://localhost:3000/admin/users/${userId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete user');
+            }
+
+            // Remove user from local state
+            setUsers(users.filter(user => user._id !== userId));
+            
+            // Hide confirmation dialog
+            setDeleteConfirm({ show: false, userId: null, userName: '' });
+            
+            alert('User deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('Failed to delete user');
+        }
+    };
+
+    // Show delete confirmation
+    const showDeleteConfirmation = (userId, userName) => {
+        setDeleteConfirm({ 
+            show: true, 
+            userId, 
+            userName 
+        });
+    };
+
+    // Hide delete confirmation
+    const hideDeleteConfirmation = () => {
+        setDeleteConfirm({ show: false, userId: null, userName: '' });
+    };
+
+    // Update car status
+    const updateCarStatus = async (carId, newStatus) => {
+        try {
+            const response = await fetch(`http://localhost:3000/admin/cars/${carId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update car status');
+            }
+
+            // Update local state
+            setCars(cars.map(car => 
+                car._id === carId ? { ...car, status: newStatus } : car
+            ));
+
+            alert('Car status updated successfully!');
+        } catch (error) {
+            console.error('Error updating car status:', error);
+            alert('Failed to update car status');
+        }
+    };
+
+    // Filter data based on search query
+    const filteredUsers = users.filter(user => 
+        user.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredCars = cars.filter(car => 
+        car.model?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        car.addedBy?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredBookings = bookings.filter(booking => 
+        booking.carModel?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        booking.userEmail?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Analytics data (you can replace this with real data from backend)
     const bookingData = [
         { name: 'Jan', completed: 120, upcoming: 80, cancelled: 10 },
         { name: 'Feb', completed: 98, upcoming: 70, cancelled: 8 },
@@ -54,9 +204,9 @@ const AdminDashboard = () => {
     ];
 
     const carStatusData = [
-        { name: 'Approved', value: 720 },
-        { name: 'Pending', value: 120 },
-        { name: 'Rejected', value: 52 },
+        { name: 'Approved', value: cars.filter(car => car.status === 'approved').length },
+        { name: 'Pending', value: cars.filter(car => car.status === 'pending').length },
+        { name: 'Rejected', value: cars.filter(car => car.status === 'rejected').length },
     ];
 
     const COLORS = ['#00C49F', '#FFBB28', '#FF8042'];
@@ -66,31 +216,18 @@ const AdminDashboard = () => {
         { id: 'cars', label: 'Car', icon: <FaCar /> },
         { id: 'bookings', label: 'Bookings', icon: <FaCalendarAlt /> },
         { id: 'analytics', label: 'Reports', icon: <FaChartLine /> },
-        { id: 'feedback', label: 'Feedback', icon: <FaComments /> },
         { id: 'settings', label: 'Settings', icon: <FaCog /> }
     ];
 
-    const filteredUsers = users.filter(user => 
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const filteredCars = cars.filter(car => 
-        car.model.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        car.owner.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const filteredBookings = bookings.filter(booking => 
-        booking.car.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        booking.user.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const filteredFeedback = feedback.filter(item => 
-        item.from.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        item.about.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     const renderTabContent = () => {
+        if (loading) {
+            return (
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+            );
+        }
+
         switch (activeTab) {
             case 'users':
                 return (
@@ -117,43 +254,39 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">User</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Email</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Role</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Joined</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-800">
                                         {filteredUsers.map(user => (
-                                            <tr key={user.id}>
+                                            <tr key={user._id}>
                                                 <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        user.role === 'owner' ? 'bg-purple-900 text-purple-300' : 'bg-blue-900 text-blue-300'
-                                                    }`}>
-                                                        {user.role}
-                                                    </span>
+                                                    <select
+                                                        value={user.role}
+                                                        onChange={(e) => updateUserRole(user._id, e.target.value)}
+                                                        className={`px-2 py-1 rounded-full text-xs border-none outline-none ${
+                                                            user.role === 'admin' ? 'bg-red-900 text-red-300' : 
+                                                            user.role === 'car-owner' ? 'bg-purple-900 text-purple-300' : 
+                                                            'bg-blue-900 text-blue-300'
+                                                        }`}
+                                                    >
+                                                        <option value="user">User</option>
+                                                        <option value="car-owner">Car Owner</option>
+                                                        <option value="admin">Admin</option>
+                                                    </select>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        user.status === 'active' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
-                                                    }`}>
-                                                        {user.status}
-                                                    </span>
+                                                    {new Date(user.createdAt).toLocaleDateString()}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{user.joined}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                                                    {user.status === 'active' ? (
-                                                        <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs flex items-center space-x-1">
-                                                            <FaUserSlash size={12} /> <span>Block</span>
-                                                        </button>
-                                                    ) : (
-                                                        <button className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg text-xs flex items-center space-x-1">
-                                                            <FaUserCheck size={12} /> <span>Unblock</span>
-                                                        </button>
-                                                    )}
-                                                    <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs">
-                                                        Edit Role
+                                                    <button 
+                                                        onClick={() => showDeleteConfirmation(user._id, user.name)}
+                                                        className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs flex items-center space-x-1"
+                                                    >
+                                                        <FaTrash size={12} /> <span>Delete</span>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -189,43 +322,40 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Car Model</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Owner</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Price</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Submitted</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-800">
                                         {filteredCars.map(car => (
-                                            <tr key={car.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">{car.model}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{car.owner}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{car.price}</td>
+                                            <tr key={car._id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">{car.carModel}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{car.addedBy?.name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">${car.pricePerDay}/day</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        car.status === 'approved' ? 'bg-green-900 text-green-300' : 
-                                                        car.status === 'pending' ? 'bg-yellow-900 text-yellow-300' : 
-                                                        'bg-red-900 text-red-300'
-                                                    }`}>
-                                                        {car.status}
-                                                    </span>
+                                                    {new Date(car.createdAt).toLocaleDateString()}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{car.submitted}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap space-x-2">
                                                     {car.status === 'pending' && (
                                                         <>
-                                                            <button className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg text-xs flex items-center space-x-1">
+                                                            <button 
+                                                                onClick={() => updateCarStatus(car._id, 'approved')}
+                                                                className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg text-xs flex items-center space-x-1"
+                                                            >
                                                                 <FaCheckCircle size={12} /> <span>Approve</span>
                                                             </button>
-                                                            <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs flex items-center space-x-1">
+                                                            <button 
+                                                                onClick={() => updateCarStatus(car._id, 'rejected')}
+                                                                className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs flex items-center space-x-1"
+                                                            >
                                                                 <FaTimesCircle size={12} /> <span>Reject</span>
                                                             </button>
                                                         </>
                                                     )}
                                                     <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs">
+                                                        <Link to={`/car-details/${car._id}`}>
                                                         View
-                                                    </button>
-                                                    <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
-                                                        <FaTrash size={12} />
+                                                        </Link>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -268,15 +398,17 @@ const AdminDashboard = () => {
                                     </thead>
                                     <tbody className="divide-y divide-gray-800">
                                         {filteredBookings.map(booking => (
-                                            <tr key={booking.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">{booking.car}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{booking.user}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{booking.dates}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-primary">{booking.price}</td>
+                                            <tr key={booking._id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">{booking.carModel}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{booking.userEmail}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {new Date(booking.startDate).toLocaleDateString()} - {new Date(booking.endDate).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-primary">${booking.totalPrice}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 py-1 rounded-full text-xs ${
                                                         booking.status === 'completed' ? 'bg-green-900 text-green-300' : 
-                                                        booking.status === 'upcoming' ? 'bg-blue-900 text-blue-300' : 
+                                                        booking.status === 'confirmed' ? 'bg-blue-900 text-blue-300' : 
                                                         'bg-red-900 text-red-300'
                                                     }`}>
                                                         {booking.status}
@@ -286,11 +418,6 @@ const AdminDashboard = () => {
                                                     <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs">
                                                         View Details
                                                     </button>
-                                                    {booking.status === 'upcoming' && (
-                                                        <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
-                                                            Cancel
-                                                        </button>
-                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -308,19 +435,19 @@ const AdminDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                                 <h3 className="text-gray-400 mb-2">Total Users</h3>
-                                <p className="text-3xl font-bold text-blue-400">{stats.totalUsers}</p>
+                                <p className="text-3xl font-bold text-blue-400">{stats.totalUsers || 0}</p>
                             </div>
                             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                                 <h3 className="text-gray-400 mb-2">Total Owners</h3>
-                                <p className="text-3xl font-bold text-purple-400">{stats.totalOwners}</p>
+                                <p className="text-3xl font-bold text-purple-400">{stats.totalOwners || 0}</p>
                             </div>
                             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                                 <h3 className="text-gray-400 mb-2">Total Cars</h3>
-                                <p className="text-3xl font-bold text-green-400">{stats.totalCars}</p>
+                                <p className="text-3xl font-bold text-green-400">{stats.totalCars || 0}</p>
                             </div>
                             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                                 <h3 className="text-gray-400 mb-2">Total Bookings</h3>
-                                <p className="text-3xl font-bold text-primary">{stats.totalBookings}</p>
+                                <p className="text-3xl font-bold text-primary">{stats.totalBookings || 0}</p>
                             </div>
                         </div>
                         
@@ -381,92 +508,12 @@ const AdminDashboard = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-xl font-bold">Revenue Overview</h3>
                                 <div className="flex items-center space-x-2">
-                                    <span className="text-green-400">{stats.monthlyGrowth}</span>
+                                    <span className="text-green-400">{stats.monthlyGrowth || '+0%'}</span>
                                     <span className="text-gray-400">this month</span>
                                 </div>
                             </div>
-                            <div className="text-4xl font-bold text-primary">{stats.totalRevenue}</div>
+                            <div className="text-4xl font-bold text-primary">{stats.totalRevenue || '$0'}</div>
                             <p className="text-gray-400 mt-2">Total revenue generated from bookings</p>
-                        </div>
-                    </div>
-                );
-            case 'feedback':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <h2 className="text-2xl font-bold">Feedback Management</h2>
-                            <div className="relative w-full md:w-64">
-                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search feedback..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-800">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">From</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">About</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Rating</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-800">
-                                        {filteredFeedback.map(item => (
-                                            <tr key={item.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        item.type === 'user' ? 'bg-blue-900 text-blue-300' : 'bg-purple-900 text-purple-300'
-                                                    }`}>
-                                                        {item.type}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{item.from}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{item.about}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center space-x-1">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <FaStar 
-                                                                key={i} 
-                                                                className={i < item.rating ? "text-yellow-400" : "text-gray-600"} 
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        item.status === 'approved' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                                                    }`}>
-                                                        {item.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                                                    <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs">
-                                                        View
-                                                    </button>
-                                                    {item.status === 'pending' && (
-                                                        <button className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg text-xs">
-                                                            Approve
-                                                        </button>
-                                                    )}
-                                                    <button className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
                     </div>
                 );
@@ -577,6 +624,35 @@ const AdminDashboard = () => {
     return (
         <section className="py-8 bg-black text-white min-h-screen">
             <ReTitle title="Rentizo | Admin Dashboard" />
+            
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm.show && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6 max-w-md w-full">
+                        <h3 className="text-xl font-bold mb-4 text-red-400">Confirm Deletion</h3>
+                        <p className="text-gray-300 mb-6">
+                            Are you sure you want to delete user <strong>"{deleteConfirm.userName}"</strong>? 
+                            This action cannot be undone and all associated data will be permanently removed.
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={hideDeleteConfirmation}
+                                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => deleteUser(deleteConfirm.userId)}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center space-x-2"
+                            >
+                                <FaTrash size={14} />
+                                <span>Delete User</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="w-11/12 mx-auto">
                 {/* Mobile menu button */}
                 <div className="md:hidden flex justify-between items-center mb-6">
@@ -626,7 +702,7 @@ const AdminDashboard = () => {
 
                     {/* Mobile Menu */}
                     {mobileMenuOpen && (
-                        <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-90 p-6 overflow-y-auto">
+                        <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-90 p-6 overflow-y-auto">
                             <div className="flex justify-end mb-6">
                                 <button 
                                     onClick={() => setMobileMenuOpen(false)}
