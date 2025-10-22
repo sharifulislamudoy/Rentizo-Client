@@ -1,97 +1,277 @@
-import { useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
-import { FaCar, FaCarAlt, FaMoneyBillWave, FaUserCog, FaStar, FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaBars, FaHome } from 'react-icons/fa';
-import { MdDashboard, MdReceipt } from 'react-icons/md';
+import { FaCarAlt, FaMoneyBillWave, FaUserCog, FaStar, FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaBars, FaHome, FaCar, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { BsCalendarCheck } from 'react-icons/bs';
+import { FiCalendar, FiDollarSign, FiFilter } from 'react-icons/fi';
 import { Link } from 'react-router';
+import { AuthContext } from '../../Provider/AuthProvider';
+import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 
 const CarOwnerDashboard = () => {
     const [activeTab, setActiveTab] = useState('myCars');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showAddCarModal, setShowAddCarModal] = useState(false);
+    const { user } = useContext(AuthContext);
 
-    // Sample data
-    const myCars = [
-        {
-            id: 1,
-            model: "Toyota Camry 2022",
-            image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
-            price: "$85/day",
-            status: "available",
-            rating: 4.7,
-            trips: 12
-        },
-        {
-            id: 2,
-            model: "Honda Civic 2021",
-            image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
-            price: "$75/day",
-            status: "maintenance",
-            rating: 4.5,
-            trips: 8
+    // State for dynamic data
+    const [myCars, setMyCars] = useState([]);
+    const [bookings, setBookings] = useState([]);
+    const [earnings, setEarnings] = useState({
+        totalEarnings: "$0",
+        pendingPayout: "$0",
+        completedPayouts: "$0",
+        recentTransactions: []
+    });
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Edit car state
+    const [editingCar, setEditingCar] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [sortOption, setSortOption] = useState('date-newest');
+
+    // Fetch car owner's data
+    useEffect(() => {
+        if (user?.email) {
+            fetchCarOwnerData();
         }
-    ];
+    }, [user, sortOption]);
 
-    const bookings = [
-        {
-            id: 1,
-            car: "Toyota Camry 2022",
-            image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
-            user: "John Smith",
-            dates: "15 Oct - 20 Oct 2023",
-            price: "$425",
-            status: "pending"
-        },
-        {
-            id: 2,
-            car: "Honda Civic 2021",
-            image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
-            user: "Sarah Johnson",
-            dates: "25 Nov - 30 Nov 2023",
-            price: "$375",
-            status: "confirmed"
-        }
-    ];
+    const fetchCarOwnerData = async () => {
+        try {
+            setLoading(true);
 
-    const earnings = {
-        totalEarnings: "$2,450",
-        pendingPayout: "$850",
-        completedPayouts: "$1,600",
-        recentTransactions: [
-            {
-                id: 1,
-                date: "15 Oct 2023",
-                amount: "$425",
-                status: "paid"
-            },
-            {
-                id: 2,
-                date: "10 Sep 2023",
-                amount: "$375",
-                status: "paid"
+            // Fetch cars owned by this user
+            const carsResponse = await fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
+                credentials: 'include',
+            });
+
+            if (carsResponse.ok) {
+                const carsData = await carsResponse.json();
+                
+                // Sort cars based on sortOption
+                let sortedData = [...carsData];
+                if (sortOption === 'date-newest') {
+                    sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else if (sortOption === 'date-oldest') {
+                    sortedData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                } else if (sortOption === 'price-lowest') {
+                    sortedData.sort((a, b) => a.pricePerDay - b.pricePerDay);
+                } else if (sortOption === 'price-highest') {
+                    sortedData.sort((a, b) => b.pricePerDay - a.pricePerDay);
+                }
+
+                setMyCars(sortedData.map(car => ({
+                    id: car._id,
+                    model: car.carModel || `${car.make} ${car.model} ${car.year}`,
+                    image: car.image,
+                    price: `$${car.pricePerDay}/day`,
+                    status: car.availability || 'available',
+                    rating: car.rating || 4.5,
+                    trips: car.bookingCount || 0,
+                    // Include all car data for editing
+                    ...car
+                })));
             }
-        ]
+
+            // Fetch bookings for owner's cars
+            const allCarsResponse = await fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
+                credentials: 'include',
+            });
+
+            if (allCarsResponse.ok) {
+                const ownerCars = await allCarsResponse.json();
+                const ownerCarIds = ownerCars.map(car => car._id);
+
+                // Fetch all bookings and filter for owner's cars
+                const bookingsResponse = await fetch(`http://localhost:3000/bookings`, {
+                    credentials: 'include',
+                });
+
+                if (bookingsResponse.ok) {
+                    const allBookings = await bookingsResponse.json();
+                    const ownerBookings = allBookings.filter(booking =>
+                        ownerCarIds.includes(booking.carId)
+                    );
+
+                    setBookings(ownerBookings.map(booking => ({
+                        id: booking._id,
+                        car: booking.carModel,
+                        image: booking.carImage,
+                        user: booking.userName || 'Customer',
+                        dates: `${new Date(booking.startDate).toLocaleDateString()} - ${new Date(booking.endDate).toLocaleDateString()}`,
+                        price: `$${booking.totalPrice || booking.pricePerDay * 5}`,
+                        status: booking.status || 'pending'
+                    })));
+                }
+            }
+
+            // Calculate earnings based on bookings
+            const earningsResponse = await fetch(`http://localhost:3000/payments`, {
+                credentials: 'include',
+            });
+
+            if (earningsResponse.ok) {
+                const paymentsData = await earningsResponse.json();
+                const ownerPayments = paymentsData.filter(payment =>
+                    payment.userEmail === user.email
+                );
+
+                const total = ownerPayments.reduce((sum, payment) => sum + parseInt(payment.amount), 0);
+                const pending = ownerPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + parseInt(p.amount), 0);
+                const completed = ownerPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseInt(p.amount), 0);
+
+                setEarnings({
+                    totalEarnings: `$${total}`,
+                    pendingPayout: `$${pending}`,
+                    completedPayouts: `$${completed}`,
+                    recentTransactions: ownerPayments.slice(0, 5).map(payment => ({
+                        id: payment._id,
+                        date: new Date(payment.createdAt).toLocaleDateString(),
+                        amount: `$${payment.amount}`,
+                        status: payment.status
+                    }))
+                });
+            }
+
+            // Sample reviews (you can replace with actual API call)
+            setReviews([
+                {
+                    id: 1,
+                    car: "Toyota Camry 2022",
+                    user: "John Smith",
+                    rating: 5,
+                    comment: "Great car and excellent service from the owner!",
+                    date: "15 Oct 2023"
+                },
+                {
+                    id: 2,
+                    car: "Honda Civic 2021",
+                    user: "Sarah Johnson",
+                    rating: 4,
+                    comment: "Good condition, but the fuel efficiency wasn't as good as expected.",
+                    date: "5 Sep 2023"
+                }
+            ]);
+
+        } catch (error) {
+            console.error('Error fetching car owner data:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const reviews = [
-        {
-            id: 1,
-            car: "Toyota Camry 2022",
-            user: "John Smith",
-            rating: 5,
-            comment: "Great car and excellent service from the owner!",
-            date: "15 Oct 2023"
-        },
-        {
-            id: 2,
-            car: "Honda Civic 2021",
-            user: "Sarah Johnson",
-            rating: 4,
-            comment: "Good condition, but the fuel efficiency wasn't as good as expected.",
-            date: "5 Sep 2023"
+    // Handle update car
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+
+        const updatedCar = {
+            carModel: form.carModel.value,
+            pricePerDay: parseFloat(form.pricePerDay.value),
+            availability: form.availability.value,
+            registration: form.registration.value,
+            features: form.features.value.split(',').map(f => f.trim()),
+            description: form.description.value,
+            image: form.image.value,
+            location: form.location.value,
+        };
+
+        const result = await Swal.fire({
+            title: "Save Changes?",
+            text: "Are you sure you want to update this car listing?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Save Changes",
+            cancelButtonText: "Cancel",
+            reverseButtons: true,
+            customClass: {
+                confirmButton: 'bg-primary hover:bg-primary-dark',
+                cancelButton: 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+            }
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const res = await fetch(`http://localhost:3000/cars/${editingCar._id}?email=${user?.email}`, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedCar),
+                });
+
+                if (res.ok) {
+                    toast.success('Car updated successfully!');
+                    setMyCars((prev) =>
+                        prev.map((car) => (car._id === editingCar._id ? { ...car, ...updatedCar } : car))
+                    );
+                    setIsModalOpen(false);
+                    setEditingCar(null);
+                } else {
+                    throw new Error('Update failed');
+                }
+            } catch {
+                toast.error('Failed to update car');
+            }
         }
-    ];
+    };
+
+    // Handle delete car
+    const handleDelete = (id) => {
+        Swal.fire({
+            title: 'Delete Car?',
+            text: 'This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            customClass: {
+                confirmButton: 'bg-red-600 hover:bg-red-700',
+                cancelButton: 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+            }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`http://localhost:3000/cars/${id}?email=${user?.email}`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                    });
+                    if (res.ok) {
+                        setMyCars((prev) => prev.filter((car) => car._id !== id));
+                        toast.success('Car deleted successfully!');
+                    } else {
+                        throw new Error();
+                    }
+                } catch {
+                    toast.error('Failed to delete car');
+                }
+            }
+        });
+    };
+
+    const handleBookingAction = async (bookingId, action) => {
+        try {
+            const response = await fetch(`http://localhost:3000/bookings/${bookingId}?email=${user.email}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    status: action === 'accept' ? 'confirmed' : 'rejected'
+                })
+            });
+
+            if (response.ok) {
+                fetchCarOwnerData(); // Refresh bookings
+            }
+        } catch (error) {
+            console.error('Error updating booking:', error);
+        }
+    };
 
     const tabs = [
         { id: 'myCars', label: 'My Cars', icon: <FaCarAlt /> },
@@ -102,74 +282,149 @@ const CarOwnerDashboard = () => {
     ];
 
     const renderTabContent = () => {
+        if (loading) {
+            return (
+                <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+            );
+        }
+
         switch (activeTab) {
             case 'myCars':
                 return (
                     <div className="space-y-6">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-bold">My Cars</h2>
-                            <button
-                                onClick={() => setShowAddCarModal(true)}
-                                className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg transition"
-                            >
-                                <FaPlus /> <span>Add New Car</span>
-                            </button>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <h2 className="text-2xl font-bold">My Car Listings</h2>
+                                <p className="text-gray-400">
+                                    Manage your {myCars.length} listed {myCars.length === 1 ? 'vehicle' : 'vehicles'}
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3 w-full md:w-auto">
+                                <div className="relative">
+                                    <select
+                                        value={sortOption}
+                                        onChange={(e) => setSortOption(e.target.value)}
+                                        className="appearance-none bg-gray-800 border border-gray-700 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-white"
+                                    >
+                                        <option value="date-newest">Newest First</option>
+                                        <option value="date-oldest">Oldest First</option>
+                                        <option value="price-lowest">Price: Low to High</option>
+                                        <option value="price-highest">Price: High to Low</option>
+                                    </select>
+                                    <FiFilter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                </div>
+
+                                <Link
+                                    to="/add-car"
+                                    className="btn btn-primary rounded-lg px-4 py-2 flex items-center gap-2"
+                                >
+                                    <FaPlus /> Add New
+                                </Link>
+                            </div>
                         </div>
 
                         {myCars.length === 0 ? (
                             <div className="text-center py-12 bg-gray-900 rounded-xl">
-                                <p className="text-gray-400">You haven't listed any cars yet</p>
-                                <button
-                                    onClick={() => setShowAddCarModal(true)}
-                                    className="mt-4 px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg transition"
-                                >
-                                    List Your First Car
-                                </button>
+                                <div className="bg-gray-800 p-8 rounded-2xl max-w-md w-full mx-auto">
+                                    <FaCar className="text-5xl mx-auto text-primary mb-4" />
+                                    <h2 className="text-2xl font-bold mb-4">No Cars Listed Yet</h2>
+                                    <p className="text-gray-400 mb-6">
+                                        You haven't added any cars to your profile. Start earning by listing your vehicle today!
+                                    </p>
+                                    <Link
+                                        to="/add-car"
+                                        className="btn btn-primary rounded-full px-6 py-3 flex items-center gap-2 w-fit mx-auto"
+                                    >
+                                        <FaPlus /> Add Your First Car
+                                    </Link>
+                                </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {myCars.map(car => (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {myCars.map((car) => (
                                     <motion.div
-                                        key={car.id}
+                                        key={car._id}
                                         whileHover={{ y: -5 }}
                                         className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden hover:border-primary transition-all"
                                     >
-                                        <div className="relative">
+                                        <div className="relative h-48">
                                             <img
                                                 src={car.image}
-                                                alt={car.model}
-                                                className="w-full h-48 object-cover"
+                                                alt={car.carModel}
+                                                className="w-full h-full object-cover"
                                             />
-                                            <span className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs ${car.status === 'available' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                                                }`}>
-                                                {car.status}
-                                            </span>
+                                            <div className="absolute top-3 right-3 flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingCar(car);
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                    className="p-2 bg-gray-800 rounded-full shadow-md hover:bg-gray-700 transition-colors"
+                                                    aria-label="Edit car"
+                                                >
+                                                    <FaEdit className="text-primary" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(car._id)}
+                                                    className="p-2 bg-gray-800 rounded-full shadow-md hover:bg-gray-700 transition-colors"
+                                                    aria-label="Delete car"
+                                                >
+                                                    <FaTrash className="text-red-500" />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="p-6">
+
+                                        <div className="p-5">
                                             <div className="flex justify-between items-start mb-2">
-                                                <h3 className="text-lg font-bold">{car.model}</h3>
-                                                <div className="flex items-center space-x-1">
-                                                    <FaStar className="text-yellow-400" />
-                                                    <span>{car.rating}</span>
-                                                </div>
+                                                <h3 className="text-xl font-bold text-white truncate">
+                                                    {car.carModel}
+                                                </h3>
+                                                <span className="bg-primary bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                                    ${car.pricePerDay}/day
+                                                </span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                                <div>
-                                                    <p className="text-gray-400 text-sm">Price</p>
-                                                    <p className="text-primary">{car.price}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-400 text-sm">Trips</p>
-                                                    <p>{car.trips}</p>
-                                                </div>
+
+                                            <div className="flex items-center text-sm text-gray-400 mb-3">
+                                                <FaCar className="mr-1" />
+                                                <span className="mr-3">{car.registration}</span>
+                                                {car.availability?.toLowerCase() === 'available' ? (
+                                                    <span className="flex items-center text-green-400">
+                                                        <FaCheckCircle className="mr-1" /> Available
+                                                    </span>
+                                                ) : (
+                                                    <span className="flex items-center text-red-400">
+                                                        <FaTimesCircle className="mr-1" /> Unavailable
+                                                    </span>
+                                                )}
                                             </div>
-                                            <div className="flex space-x-3">
-                                                <button className="flex-1 py-2 bg-primary hover:bg-primary-dark rounded-lg transition flex items-center justify-center space-x-2">
-                                                    <FaEdit /> <span>Edit</span>
-                                                </button>
-                                                <button className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center justify-center space-x-2">
-                                                    <FaTrash /> <span>Delete</span>
-                                                </button>
+
+                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                {car.features?.slice(0, 3).map((feature, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded"
+                                                    >
+                                                        {feature}
+                                                    </span>
+                                                ))}
+                                                {car.features?.length > 3 && (
+                                                    <span className="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                                                        +{car.features.length - 3} more
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-between items-center pt-3 border-t border-gray-700">
+                                                <div className="text-sm text-gray-400 flex items-center">
+                                                    <FiCalendar className="mr-1" />
+                                                    {new Date(car.createdAt).toLocaleDateString()}
+                                                </div>
+                                                <div className="text-sm font-medium">
+                                                    <span className="text-primary">{car.bookingCount || 0}</span> bookings
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -178,6 +433,7 @@ const CarOwnerDashboard = () => {
                         )}
                     </div>
                 );
+
             case 'bookings':
                 return (
                     <div className="space-y-6">
@@ -227,10 +483,16 @@ const CarOwnerDashboard = () => {
                                             </div>
                                             {booking.status === 'pending' && (
                                                 <div className="flex space-x-3 mt-4">
-                                                    <button className="flex-1 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition flex items-center justify-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleBookingAction(booking.id, 'accept')}
+                                                        className="flex-1 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition flex items-center justify-center space-x-2"
+                                                    >
                                                         <FaCheck /> <span>Accept</span>
                                                     </button>
-                                                    <button className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center justify-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleBookingAction(booking.id, 'reject')}
+                                                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center justify-center space-x-2"
+                                                    >
                                                         <FaTimes /> <span>Reject</span>
                                                     </button>
                                                 </div>
@@ -242,6 +504,7 @@ const CarOwnerDashboard = () => {
                         )}
                     </div>
                 );
+
             case 'earnings':
                 return (
                     <div className="space-y-6">
@@ -321,6 +584,7 @@ const CarOwnerDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'reviews':
                 return (
                     <div className="space-y-6">
@@ -371,6 +635,7 @@ const CarOwnerDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'profile':
                 return (
                     <div>
@@ -381,7 +646,7 @@ const CarOwnerDashboard = () => {
                                     <label className="block text-gray-400 mb-2">Full Name</label>
                                     <input
                                         type="text"
-                                        defaultValue="Car Owner"
+                                        defaultValue={user?.displayName || "Car Owner"}
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
@@ -389,7 +654,7 @@ const CarOwnerDashboard = () => {
                                     <label className="block text-gray-400 mb-2">Email</label>
                                     <input
                                         type="email"
-                                        defaultValue="owner@example.com"
+                                        defaultValue={user?.email || "owner@example.com"}
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
@@ -437,6 +702,7 @@ const CarOwnerDashboard = () => {
                         </div>
                     </div>
                 );
+
             default:
                 return null;
         }
@@ -444,7 +710,7 @@ const CarOwnerDashboard = () => {
 
     return (
         <section className="py-8 bg-black text-white min-h-screen">
-            <ReTitle title="Rentizo | Owner Dashboard" />
+            <ReTitle title="Owner Dashboard" />
             <div className="w-11/12 mx-auto">
                 {/* Mobile menu button */}
                 <div className="md:hidden flex justify-between items-center mb-6">
@@ -463,14 +729,25 @@ const CarOwnerDashboard = () => {
 
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Sidebar - Desktop */}
-                    <div className="hidden md:block w-[200px]">
+                    <div className="hidden md:block w-64 flex-shrink-0">
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6 sticky top-8">
                             <div className="flex items-center space-x-3 mb-8">
-                                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                                    <span className="text-xl font-bold">CO</span>
+                                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                                    {user?.photoURL ? (
+                                        <img
+                                            src={user.photoURL}
+                                            alt="Profile"
+                                            className="w-full h-full rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-xl font-bold text-white">
+                                            {user?.displayName?.charAt(0) || 'CO'}
+                                        </span>
+                                    )}
                                 </div>
-                                <div>
-                                    <h3 className="font-bold">Car Owner</h3>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-bold text-white truncate">{user?.displayName || 'Car Owner'}</h3>
+                                    <p className="text-sm text-gray-400 truncate">{user?.email}</p>
                                 </div>
                             </div>
                             <nav className="space-y-2">
@@ -491,7 +768,7 @@ const CarOwnerDashboard = () => {
                                             }`}
                                     >
                                         <span>{tab.icon}</span>
-                                        <span>{tab.label}</span>
+                                        <span className="whitespace-nowrap">{tab.label}</span>
                                     </button>
                                 ))}
                             </nav>
@@ -511,11 +788,22 @@ const CarOwnerDashboard = () => {
                             </div>
                             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                                 <div className="flex items-center space-x-3 mb-8">
-                                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                                        <span className="text-xl font-bold">CO</span>
+                                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                                        {user?.photoURL ? (
+                                            <img
+                                                src={user.photoURL}
+                                                alt="Profile"
+                                                className="w-full h-full rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-xl font-bold text-white">
+                                                {user?.displayName?.charAt(0) || 'CO'}
+                                            </span>
+                                        )}
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold">Car Owner</h3>
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="font-bold text-white truncate">{user?.displayName || 'Car Owner'}</h3>
+                                        <p className="text-sm text-gray-400 truncate">{user?.email}</p>
                                     </div>
                                 </div>
                                 <nav className="space-y-2">
@@ -539,7 +827,7 @@ const CarOwnerDashboard = () => {
                                                 }`}
                                         >
                                             <span>{tab.icon}</span>
-                                            <span>{tab.label}</span>
+                                            <span className="whitespace-nowrap">{tab.label}</span>
                                         </button>
                                     ))}
                                 </nav>
@@ -548,127 +836,164 @@ const CarOwnerDashboard = () => {
                     )}
 
                     {/* Main Content */}
-                    <div className="w-full md:w-3/4 lg:w-4/5">
-                        {renderTabContent()}
+                    <div className="flex-1 min-w-0">
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
+                            {renderTabContent()}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Add Car Modal */}
-            {showAddCarModal && (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6 w-full max-w-2xl"
-                    >
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold">Add New Car</h3>
-                            <button
-                                onClick={() => setShowAddCarModal(false)}
-                                className="text-gray-400 hover:text-white"
-                            >
-                                <FaTimes size={20} />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Make</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Model</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Year</label>
-                                    <input
-                                        type="number"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Price per day ($)</label>
-                                    <input
-                                        type="number"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Vehicle Type</label>
-                                    <select className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                                        <option>Sedan</option>
-                                        <option>SUV</option>
-                                        <option>Truck</option>
-                                        <option>Luxury</option>
-                                        <option>Sports</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-400 mb-2">Description</label>
-                                <textarea
-                                    rows="3"
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                ></textarea>
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-400 mb-2">Car Photos</label>
-                                <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center">
-                                    <p className="text-gray-400 mb-2">Drag & drop images here or click to browse</p>
-                                    <button className="px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg transition">
-                                        Upload Images
+                {/* Edit Modal - Same as MyCars component */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                        >
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-2xl font-bold text-white">Edit Car Details</h3>
+                                    <button
+                                        onClick={() => {
+                                            setIsModalOpen(false);
+                                            setEditingCar(null);
+                                        }}
+                                        className="text-gray-400 hover:text-gray-200"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Location</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Where is the car located?"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Availability</label>
-                                    <select className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                                        <option>Available</option>
-                                        <option>Not Available</option>
-                                        <option>Maintenance</option>
-                                    </select>
-                                </div>
-                            </div>
+                                <form onSubmit={handleUpdate} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Car Model
+                                            </label>
+                                            <input
+                                                name="carModel"
+                                                defaultValue={editingCar.carModel}
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
 
-                            <div className="flex justify-end space-x-3 mt-6">
-                                <button
-                                    onClick={() => setShowAddCarModal(false)}
-                                    className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
-                                >
-                                    Cancel
-                                </button>
-                                <button className="px-6 py-2 bg-primary hover:bg-primary-dark rounded-lg transition">
-                                    Add Car
-                                </button>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Price Per Day ($)
+                                            </label>
+                                            <input
+                                                name="pricePerDay"
+                                                defaultValue={editingCar.pricePerDay}
+                                                required
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Availability
+                                            </label>
+                                            <select
+                                                name="availability"
+                                                defaultValue={editingCar.availability}
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            >
+                                                <option value="available">Available</option>
+                                                <option value="unavailable">Unavailable</option>
+                                                <option value="maintenance">Under Maintenance</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Registration Number
+                                            </label>
+                                            <input
+                                                name="registration"
+                                                defaultValue={editingCar.registration}
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Features (comma separated)
+                                            </label>
+                                            <input
+                                                name="features"
+                                                defaultValue={editingCar.features?.join(', ')}
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Image URL
+                                            </label>
+                                            <input
+                                                name="image"
+                                                defaultValue={editingCar.image}
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Location
+                                            </label>
+                                            <input
+                                                name="location"
+                                                defaultValue={editingCar.location}
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                                                Description
+                                            </label>
+                                            <textarea
+                                                name="description"
+                                                defaultValue={editingCar.description}
+                                                rows="3"
+                                                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-primary focus:border-primary bg-gray-700 text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-3 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsModalOpen(false);
+                                                setEditingCar(null);
+                                            }}
+                                            className="px-4 py-2 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                                        >
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
+                        </motion.div>
+                    </div>
+                )}
+            </div>
         </section>
     );
 };
