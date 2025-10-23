@@ -80,14 +80,6 @@ const Navbar = () => {
             );
         }
 
-        // Add admin specific links if needed
-        if (userRole === 'admin') {
-            baseLinks.splice(1, 0, 
-                { name: 'Manage Users', path: '/admin/users', icon: <FaUserPlus className="text-sm" /> },
-                { name: 'All Bookings', path: '/admin/bookings', icon: <FaHistory className="text-sm" /> }
-            );
-        }
-
         return baseLinks;
     };
 

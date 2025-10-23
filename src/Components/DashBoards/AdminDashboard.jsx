@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ReTitle } from 're-title';
-import { FaUsers, FaCar, FaCalendarAlt, FaChartLine, FaCog, FaComments, FaSearch, FaUserSlash, FaUserCheck, FaCheckCircle, FaTimesCircle, FaEdit, FaTrash, FaBars, FaStar, FaTimes } from 'react-icons/fa';
-import { MdDashboard, MdAdminPanelSettings } from 'react-icons/md';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { FaUsers, FaCar, FaCalendarAlt, FaChartLine, FaSearch, FaCheckCircle, FaTimesCircle, FaTrash, FaBars, FaTimes, FaMoneyBillWave, FaUserCheck, FaCarSide, FaReceipt } from 'react-icons/fa';
+import { MdAdminPanelSettings } from 'react-icons/md';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import { Link } from 'react-router';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('users');
+    const [activeTab, setActiveTab] = useState('analytics');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState([]);
     const [cars, setCars] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [payments, setPayments] = useState([]);
     const [stats, setStats] = useState({});
     const [loading, setLoading] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, userId: null, userName: '' });
@@ -57,23 +58,26 @@ const AdminDashboard = () => {
         }
     }, [activeTab]);
 
-    // Fetch stats for analytics
+    // Fetch comprehensive stats for analytics
     useEffect(() => {
         const fetchStats = async () => {
             if (activeTab === 'analytics') {
+                setLoading(true);
                 try {
-                    const response = await fetch('http://localhost:3000/admin/stats', {
+                    const response = await fetch('http://localhost:3000/admin/analytics', {
                         credentials: 'include'
                     });
                     
                     if (!response.ok) {
-                        throw new Error('Failed to fetch stats');
+                        throw new Error('Failed to fetch analytics');
                     }
                     
                     const data = await response.json();
                     setStats(data);
                 } catch (error) {
-                    console.error('Error fetching stats:', error);
+                    console.error('Error fetching analytics:', error);
+                } finally {
+                    setLoading(false);
                 }
             }
         };
@@ -97,7 +101,6 @@ const AdminDashboard = () => {
                 throw new Error('Failed to update user role');
             }
 
-            // Update local state
             setUsers(users.map(user => 
                 user._id === userId ? { ...user, role: newRole } : user
             ));
@@ -108,7 +111,6 @@ const AdminDashboard = () => {
             alert('Failed to update user role');
         }
     };
-
 
     // Delete user
     const deleteUser = async (userId) => {
@@ -122,12 +124,8 @@ const AdminDashboard = () => {
                 throw new Error('Failed to delete user');
             }
 
-            // Remove user from local state
             setUsers(users.filter(user => user._id !== userId));
-            
-            // Hide confirmation dialog
             setDeleteConfirm({ show: false, userId: null, userName: '' });
-            
             alert('User deleted successfully!');
         } catch (error) {
             console.error('Error deleting user:', error);
@@ -165,7 +163,6 @@ const AdminDashboard = () => {
                 throw new Error('Failed to update car status');
             }
 
-            // Update local state
             setCars(cars.map(car => 
                 car._id === carId ? { ...car, status: newStatus } : car
             ));
@@ -193,30 +190,14 @@ const AdminDashboard = () => {
         booking.userEmail?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Analytics data (you can replace this with real data from backend)
-    const bookingData = [
-        { name: 'Jan', completed: 120, upcoming: 80, cancelled: 10 },
-        { name: 'Feb', completed: 98, upcoming: 70, cancelled: 8 },
-        { name: 'Mar', completed: 150, upcoming: 90, cancelled: 12 },
-        { name: 'Apr', completed: 110, upcoming: 60, cancelled: 5 },
-        { name: 'May', completed: 140, upcoming: 100, cancelled: 15 },
-        { name: 'Jun', completed: 180, upcoming: 120, cancelled: 20 },
-    ];
-
-    const carStatusData = [
-        { name: 'Approved', value: cars.filter(car => car.status === 'approved').length },
-        { name: 'Pending', value: cars.filter(car => car.status === 'pending').length },
-        { name: 'Rejected', value: cars.filter(car => car.status === 'rejected').length },
-    ];
-
-    const COLORS = ['#00C49F', '#FFBB28', '#FF8042'];
+    // Chart colors
+    const COLORS = ['#00C49F', '#0088FE', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
     const tabs = [
-        { id: 'users', label: 'User', icon: <FaUsers /> },
-        { id: 'cars', label: 'Car', icon: <FaCar /> },
+        { id: 'analytics', label: 'Analytics', icon: <FaChartLine /> },
+        { id: 'users', label: 'Users', icon: <FaUsers /> },
+        { id: 'cars', label: 'Cars', icon: <FaCar /> },
         { id: 'bookings', label: 'Bookings', icon: <FaCalendarAlt /> },
-        { id: 'analytics', label: 'Reports', icon: <FaChartLine /> },
-        { id: 'settings', label: 'Settings', icon: <FaCog /> }
     ];
 
     const renderTabContent = () => {
@@ -229,6 +210,254 @@ const AdminDashboard = () => {
         }
 
         switch (activeTab) {
+            case 'analytics':
+                return (
+                    <div className="space-y-8">
+                        <h2 className="text-2xl font-bold">Website Analytics Dashboard</h2>
+                        
+                        {/* Key Metrics Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 rounded-xl border border-blue-800 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Total Users</h3>
+                                        <p className="text-3xl font-bold text-blue-400">{stats.totalUsers || 0}</p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {stats.userGrowth > 0 ? `+${stats.userGrowth}%` : `${stats.userGrowth}%`} from last month
+                                        </p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-full bg-blue-900/50 flex items-center justify-center">
+                                        <FaUsers className="text-blue-400 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 rounded-xl border border-purple-800 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Car Owners</h3>
+                                        <p className="text-3xl font-bold text-purple-400">{stats.totalOwners || 0}</p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {stats.ownerPercentage || 0}% of total users
+                                        </p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-full bg-purple-900/50 flex items-center justify-center">
+                                        <FaUserCheck className="text-purple-400 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-green-900/50 to-green-800/30 rounded-xl border border-green-800 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Total Cars</h3>
+                                        <p className="text-3xl font-bold text-green-400">{stats.totalCars || 0}</p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {stats.availableCars || 0} available now
+                                        </p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-full bg-green-900/50 flex items-center justify-center">
+                                        <FaCarSide className="text-green-400 text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl border border-primary/30 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Total Bookings</h3>
+                                        <p className="text-3xl font-bold text-primary">{stats.totalBookings || 0}</p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {stats.activeBookings || 0} active now
+                                        </p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                                        <FaCalendarAlt className="text-primary text-xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Revenue Metrics */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-gradient-to-br from-yellow-900/50 to-yellow-800/30 rounded-xl border border-yellow-800 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Total Revenue</h3>
+                                        <p className="text-2xl font-bold text-yellow-400">{stats.totalRevenue || '$0'}</p>
+                                        <p className="text-sm text-gray-400 mt-1">All time</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-yellow-900/50 flex items-center justify-center">
+                                        <FaMoneyBillWave className="text-yellow-400" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-green-900/50 to-green-800/30 rounded-xl border border-green-800 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Monthly Revenue</h3>
+                                        <p className="text-2xl font-bold text-green-400">{stats.monthlyRevenue || '$0'}</p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {stats.revenueGrowth > 0 ? `+${stats.revenueGrowth}%` : `${stats.revenueGrowth}%`} growth
+                                        </p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-green-900/50 flex items-center justify-center">
+                                        <FaChartLine className="text-green-400" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-red-900/50 to-red-800/30 rounded-xl border border-red-800 p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-gray-400 mb-2">Pending Payments</h3>
+                                        <p className="text-2xl font-bold text-red-400">{stats.pendingPayments || '$0'}</p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {stats.pendingCount || 0} transactions
+                                        </p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-red-900/50 flex items-center justify-center">
+                                        <FaReceipt className="text-red-400" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Charts Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Monthly Bookings Chart */}
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
+                                <h3 className="text-xl font-bold mb-4">Monthly Bookings Trend</h3>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart
+                                            data={stats.monthlyBookings || []}
+                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                            <XAxis dataKey="month" stroke="#9CA3AF" />
+                                            <YAxis stroke="#9CA3AF" />
+                                            <Tooltip 
+                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151' }}
+                                            />
+                                            <Area 
+                                                type="monotone" 
+                                                dataKey="bookings" 
+                                                stroke="#00C49F" 
+                                                fill="#00C49F" 
+                                                fillOpacity={0.3}
+                                                name="Bookings"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* User Distribution */}
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
+                                <h3 className="text-xl font-bold mb-4">User Distribution</h3>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={stats.userDistribution || []}
+                                                cx="50%"
+                                                cy="50%"
+                                                labelLine={false}
+                                                outerRadius={80}
+                                                fill="#8884d8"
+                                                dataKey="value"
+                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                            >
+                                                {(stats.userDistribution || []).map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip 
+                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151' }}
+                                            />
+                                            <Legend />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Additional Charts */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Car Status Distribution */}
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
+                                <h3 className="text-xl font-bold mb-4">Car Approval Status</h3>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={stats.carStatusData || []}
+                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                            <XAxis dataKey="status" stroke="#9CA3AF" />
+                                            <YAxis stroke="#9CA3AF" />
+                                            <Tooltip 
+                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151' }}
+                                            />
+                                            <Bar dataKey="count" fill="#0088FE" name="Cars" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Revenue Trend */}
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
+                                <h3 className="text-xl font-bold mb-4">Revenue Trend</h3>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart
+                                            data={stats.revenueTrend || []}
+                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                            <XAxis dataKey="month" stroke="#9CA3AF" />
+                                            <YAxis stroke="#9CA3AF" />
+                                            <Tooltip 
+                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151' }}
+                                                formatter={(value) => [`$${value}`, 'Revenue']}
+                                            />
+                                            <Line 
+                                                type="monotone" 
+                                                dataKey="revenue" 
+                                                stroke="#FFBB28" 
+                                                strokeWidth={2}
+                                                name="Revenue"
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-gray-800/50 rounded-lg p-4 text-center">
+                                <p className="text-2xl font-bold text-primary">{stats.avgBookingValue || '$0'}</p>
+                                <p className="text-sm text-gray-400">Avg. Booking Value</p>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-lg p-4 text-center">
+                                <p className="text-2xl font-bold text-green-400">{stats.occupancyRate || '0%'}</p>
+                                <p className="text-sm text-gray-400">Car Occupancy Rate</p>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-lg p-4 text-center">
+                                <p className="text-2xl font-bold text-blue-400">{stats.repeatCustomers || 0}</p>
+                                <p className="text-sm text-gray-400">Repeat Customers</p>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-lg p-4 text-center">
+                                <p className="text-2xl font-bold text-purple-400">{stats.cancellationRate || '0%'}</p>
+                                <p className="text-sm text-gray-400">Cancellation Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+
             case 'users':
                 return (
                     <div className="space-y-6">
@@ -297,6 +526,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'cars':
                 return (
                     <div className="space-y-6">
@@ -322,6 +552,7 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Car Model</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Owner</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Price</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Submitted</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
                                         </tr>
@@ -332,6 +563,15 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap">{car.carModel}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{car.addedBy?.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">${car.pricePerDay}/day</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                                        car.status === 'approved' ? 'bg-green-900 text-green-300' : 
+                                                        car.status === 'pending' ? 'bg-yellow-900 text-yellow-300' : 
+                                                        'bg-red-900 text-red-300'
+                                                    }`}>
+                                                        {car.status}
+                                                    </span>
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {new Date(car.createdAt).toLocaleDateString()}
                                                 </td>
@@ -354,7 +594,7 @@ const AdminDashboard = () => {
                                                     )}
                                                     <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs">
                                                         <Link to={`/car-details/${car._id}`}>
-                                                        View
+                                                            View
                                                         </Link>
                                                     </button>
                                                 </td>
@@ -366,6 +606,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'bookings':
                 return (
                     <div className="space-y-6">
@@ -393,7 +634,6 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Dates</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Price</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-800">
@@ -404,7 +644,7 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {new Date(booking.startDate).toLocaleDateString()} - {new Date(booking.endDate).toLocaleDateString()}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-primary">${booking.totalPrice}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-primary">${booking.paidAmount}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 py-1 rounded-full text-xs ${
                                                         booking.status === 'completed' ? 'bg-green-900 text-green-300' : 
@@ -414,11 +654,6 @@ const AdminDashboard = () => {
                                                         {booking.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                                                    <button className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs">
-                                                        View Details
-                                                    </button>
-                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -427,195 +662,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
-            case 'analytics':
-                return (
-                    <div className="space-y-8">
-                        <h2 className="text-2xl font-bold">Reports & Analytics</h2>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                                <h3 className="text-gray-400 mb-2">Total Users</h3>
-                                <p className="text-3xl font-bold text-blue-400">{stats.totalUsers || 0}</p>
-                            </div>
-                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                                <h3 className="text-gray-400 mb-2">Total Owners</h3>
-                                <p className="text-3xl font-bold text-purple-400">{stats.totalOwners || 0}</p>
-                            </div>
-                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                                <h3 className="text-gray-400 mb-2">Total Cars</h3>
-                                <p className="text-3xl font-bold text-green-400">{stats.totalCars || 0}</p>
-                            </div>
-                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                                <h3 className="text-gray-400 mb-2">Total Bookings</h3>
-                                <p className="text-3xl font-bold text-primary">{stats.totalBookings || 0}</p>
-                            </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                                <h3 className="text-xl font-bold mb-4">Monthly Bookings</h3>
-                                <div className="h-80">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            data={bookingData}
-                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                                        >
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                            <XAxis dataKey="name" stroke="#9CA3AF" />
-                                            <YAxis stroke="#9CA3AF" />
-                                            <Tooltip 
-                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151' }}
-                                            />
-                                            <Legend />
-                                            <Bar dataKey="completed" fill="#00C49F" name="Completed" />
-                                            <Bar dataKey="upcoming" fill="#0088FE" name="Upcoming" />
-                                            <Bar dataKey="cancelled" fill="#FF8042" name="Cancelled" />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                            
-                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                                <h3 className="text-xl font-bold mb-4">Car Approval Status</h3>
-                                <div className="h-80">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={carStatusData}
-                                                cx="50%"
-                                                cy="50%"
-                                                labelLine={false}
-                                                outerRadius={80}
-                                                fill="#8884d8"
-                                                dataKey="value"
-                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                            >
-                                                {carStatusData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip 
-                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151' }}
-                                            />
-                                            <Legend />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-bold">Revenue Overview</h3>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-green-400">{stats.monthlyGrowth || '+0%'}</span>
-                                    <span className="text-gray-400">this month</span>
-                                </div>
-                            </div>
-                            <div className="text-4xl font-bold text-primary">{stats.totalRevenue || '$0'}</div>
-                            <p className="text-gray-400 mt-2">Total revenue generated from bookings</p>
-                        </div>
-                    </div>
-                );
-            case 'settings':
-                return (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold">Site Settings</h2>
-                        
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                            <h3 className="text-xl font-bold mb-6">General Settings</h3>
-                            
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Site Name</label>
-                                    <input 
-                                        type="text" 
-                                        defaultValue="Rentizo" 
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Site Logo</label>
-                                    <div className="flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-gray-700 rounded-lg flex items-center justify-center">
-                                            <span className="text-gray-400">Logo</span>
-                                        </div>
-                                        <button className="px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg transition">
-                                            Upload New Logo
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Default Commission Rate</label>
-                                    <div className="relative w-32">
-                                        <input 
-                                            type="number" 
-                                            defaultValue="15" 
-                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary"
-                                        />
-                                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2">%</span>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-gray-400 mb-2">Site Maintenance Mode</label>
-                                    <label className="inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" value="" className="sr-only peer" />
-                                        <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                        <span className="ml-3 text-sm">Enable Maintenance Mode</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
-                            <h3 className="text-xl font-bold mb-6">Notification Settings</h3>
-                            
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h4 className="font-medium">New Booking Notifications</h4>
-                                        <p className="text-sm text-gray-400">Receive notifications when new bookings are made</p>
-                                    </div>
-                                    <label className="inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked className="sr-only peer" />
-                                        <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-                                
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h4 className="font-medium">New User Notifications</h4>
-                                        <p className="text-sm text-gray-400">Receive notifications when new users register</p>
-                                    </div>
-                                    <label className="inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked className="sr-only peer" />
-                                        <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-                                
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h4 className="font-medium">Payment Notifications</h4>
-                                        <p className="text-sm text-gray-400">Receive notifications for completed payments</p>
-                                    </div>
-                                    <label className="inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked className="sr-only peer" />
-                                        <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex justify-end">
-                            <button className="px-6 py-3 bg-primary hover:bg-primary-dark rounded-lg transition">
-                                Save Settings
-                            </button>
-                        </div>
-                    </div>
-                );
+
             default:
                 return null;
         }
@@ -744,7 +791,7 @@ const AdminDashboard = () => {
                     )}
 
                     {/* Main Content */}
-                    <div className="w-full md:w-3/4 lg:w-4/5">
+                    <div className="flex-1">
                         {renderTabContent()}
                     </div>
                 </div>
