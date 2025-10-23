@@ -192,6 +192,17 @@ const CarDetails = () => {
 
         const bookingResult = await response.json();
 
+        // 🔥 FIX: Increment booking count after successful booking
+        try {
+          await fetch(`http://localhost:3000/cars/${car._id}/increment`, {
+            method: 'PATCH',
+            credentials: 'include'
+          });
+        } catch (incrementError) {
+          console.warn('Failed to increment booking count:', incrementError);
+          // Don't block the booking flow if this fails
+        }
+
         // Navigate to payment page with booking data
         navigate('/payment', {
           state: {
