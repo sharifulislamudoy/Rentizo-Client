@@ -36,7 +36,7 @@ const UserDashboard = () => {
     useEffect(() => {
         if (user?.email) {
             // Fetch user bookings
-            fetch(`http://localhost:3000/bookings?email=${user.email}`, {
+            fetch(`https://rentizo-server.vercel.app/bookings?email=${user.email}`, {
                 credentials: 'include',
             })
                 .then((res) => res.json())
@@ -57,7 +57,7 @@ const UserDashboard = () => {
                 .catch(() => setLoading(false));
 
             // Fetch user profile data
-            fetch(`http://localhost:3000/users/${user.email}`, {
+            fetch(`https://rentizo-server.vercel.app/users/${user.email}`, {
                 credentials: 'include',
             })
                 .then(res => res.json())
@@ -101,7 +101,7 @@ const UserDashboard = () => {
             return;
         }
 
-        fetch('http://localhost:3000/cars')
+        fetch('https://rentizo-server.vercel.app/cars')
             .then(res => res.json())
             .then(allCars => {
                 const wishlistCars = allCars.filter(car => wishlistIds.includes(car._id));
@@ -116,7 +116,7 @@ const UserDashboard = () => {
     const fetchPaymentsData = () => {
         setPaymentsLoading(true);
         // Add email query parameter
-        fetch(`http://localhost:3000/payments?email=${user.email}`, {
+        fetch(`https://rentizo-server.vercel.app/payments?email=${user.email}`, {
             credentials: 'include',
         })
             .then(res => {
@@ -211,7 +211,7 @@ const UserDashboard = () => {
             }
 
             // Update in MongoDB
-            const response = await fetch(`http://localhost:3000/users/${user.email}`, {
+            const response = await fetch(`https://rentizo-server.vercel.app/users/${user.email}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -237,7 +237,7 @@ const UserDashboard = () => {
     const handleBecomeCarOwner = async () => {
         setRoleUpdating(true);
         try {
-            const response = await fetch(`http://localhost:3000/users/${user.email}/role`, {
+            const response = await fetch(`https://rentizo-server.vercel.app/users/${user.email}/role`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

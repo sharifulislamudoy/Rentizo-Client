@@ -39,7 +39,7 @@ const CheckoutForm = () => {
     // Create PaymentIntent as soon as the page loads
     const createPaymentIntent = async () => {
       try {
-        const response = await fetch('http://localhost:3000/create-payment-intent', {
+        const response = await fetch('https://rentizo-server.vercel.app/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ const CheckoutForm = () => {
 
   const savePaymentToDB = async (paymentData) => {
     try {
-      const response = await fetch('http://localhost:3000/payments', {
+      const response = await fetch('https://rentizo-server.vercel.app/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ const CheckoutForm = () => {
         await savePaymentToDB(paymentData);
 
         // Update booking status to confirmed
-        const updateResponse = await fetch(`http://localhost:3000/bookings/${bookingData._id}?email=${user.email}`, {
+        const updateResponse = await fetch(`https://rentizo-server.vercel.app/bookings/${bookingData._id}?email=${user.email}`, {
           method: 'PATCH',
           credentials: 'include',
           headers: {

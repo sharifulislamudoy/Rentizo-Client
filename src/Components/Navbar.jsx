@@ -31,7 +31,7 @@ const Navbar = () => {
         const fetchUserRole = async () => {
             if (user?.email) {
                 try {
-                    const response = await axios.get(`http://localhost:3000/users/${user.email}`);
+                    const response = await axios.get(`https://rentizo-server.vercel.app/users/${user.email}`);
                     setUserRole(response.data.role || 'user');
                 } catch (error) {
                     console.error('Error fetching user role:', error);
@@ -106,7 +106,7 @@ const Navbar = () => {
 
         if (result.isConfirmed) {
             try {
-                await axios.post('http://localhost:3000/logout', {}, { withCredentials: true });
+                await axios.post('https://rentizo-server.vercel.app/logout', {}, { withCredentials: true });
                 await logOut();
                 setUserRole('user'); // Reset role on logout
                 Swal.fire('Logged out!', 'You have been logged out.', 'success');

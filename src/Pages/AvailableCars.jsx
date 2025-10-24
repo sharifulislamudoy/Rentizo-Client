@@ -22,7 +22,7 @@ const AvailableCars = () => {
   const carTypes = [...new Set(allCars.map((car) => car.carType))];
 
   useEffect(() => {
-    fetch("http://localhost:3000/cars/")
+    fetch("https://rentizo-server.vercel.app/cars/")
       .then((res) => res.json())
       .then((data) => {
         setAllCars(data);

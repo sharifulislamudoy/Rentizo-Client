@@ -23,7 +23,7 @@ const AdminDashboard = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost:3000/admin/${activeTab}`, {
+                const response = await fetch(`https://rentizo-server.vercel.app/admin/${activeTab}`, {
                     credentials: 'include'
                 });
                 
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
             if (activeTab === 'analytics') {
                 setLoading(true);
                 try {
-                    const response = await fetch('http://localhost:3000/admin/analytics', {
+                    const response = await fetch('https://rentizo-server.vercel.app/admin/analytics', {
                         credentials: 'include'
                     });
                     
@@ -88,7 +88,7 @@ const AdminDashboard = () => {
     // Update user role
     const updateUserRole = async (userId, newRole) => {
         try {
-            const response = await fetch(`http://localhost:3000/admin/users/${userId}/role`, {
+            const response = await fetch(`https://rentizo-server.vercel.app/admin/users/${userId}/role`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ const AdminDashboard = () => {
     // Delete user
     const deleteUser = async (userId) => {
         try {
-            const response = await fetch(`http://localhost:3000/admin/users/${userId}`, {
+            const response = await fetch(`https://rentizo-server.vercel.app/admin/users/${userId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -150,7 +150,7 @@ const AdminDashboard = () => {
     // Update car status
     const updateCarStatus = async (carId, newStatus) => {
         try {
-            const response = await fetch(`http://localhost:3000/admin/cars/${carId}/status`, {
+            const response = await fetch(`https://rentizo-server.vercel.app/admin/cars/${carId}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -552,7 +552,6 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Car Model</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Owner</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Price</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Submitted</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
                                         </tr>
@@ -563,15 +562,6 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap">{car.carModel}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{car.addedBy?.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">${car.pricePerDay}/day</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        car.status === 'approved' ? 'bg-green-900 text-green-300' : 
-                                                        car.status === 'pending' ? 'bg-yellow-900 text-yellow-300' : 
-                                                        'bg-red-900 text-red-300'
-                                                    }`}>
-                                                        {car.status}
-                                                    </span>
-                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {new Date(car.createdAt).toLocaleDateString()}
                                                 </td>

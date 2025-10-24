@@ -14,7 +14,7 @@ const BookingDetails = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/bookings/${id}`, {
+                const response = await fetch(`https://rentizo-server.vercel.app/bookings/${id}`, {
                     credentials: 'include'
                 });
                 

@@ -13,7 +13,7 @@ const CarOwnerRoute = ({ children }) => {
         const fetchUserRole = async () => {
             if (user?.email) {
                 try {
-                    const response = await axios.get(`http://localhost:3000/users/${user.email}`);
+                    const response = await axios.get(`https://rentizo-server.vercel.app/users/${user.email}`);
                     setUserRole(response.data.role);
                 } catch (error) {
                     console.error('Error fetching user role:', error);

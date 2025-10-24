@@ -21,7 +21,7 @@ const MyBookings = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
+      fetch(`https://rentizo-server.vercel.app/bookings?email=${user.email}`, {
         credentials: 'include',
       })
         .then((res) => res.json())
@@ -49,7 +49,7 @@ const MyBookings = () => {
     if (confirm.isConfirmed) {
       try {
         const res = await fetch(
-          `http://localhost:3000/bookings/${id}?email=${user?.email}`,
+          `https://rentizo-server.vercel.app/bookings/${id}?email=${user?.email}`,
           {
             method: 'DELETE',
             credentials: 'include',
@@ -116,7 +116,7 @@ const MyBookings = () => {
     }
 
     const res = await fetch(
-      `http://localhost:3000/bookings/${selectedBooking._id}?email=${user?.email}`,
+      `https://rentizo-server.vercel.app/bookings/${selectedBooking._id}?email=${user?.email}`,
       {
         method: 'PATCH',
         credentials: 'include',

@@ -57,7 +57,7 @@ const AddCar = () => {
     };
 
     try {
-      const res = await fetch(`http://localhost:3000/cars?email=${user?.email}`, {
+      const res = await fetch(`https://rentizo-server.vercel.app/cars?email=${user?.email}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

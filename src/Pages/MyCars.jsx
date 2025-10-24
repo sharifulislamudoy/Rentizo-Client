@@ -21,7 +21,7 @@ const MyCars = () => {
   // Fetch user's cars
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
+      fetch(`https://rentizo-server.vercel.app/cars/by-email?email=${user.email}`, {
         credentials: 'include'
       })
         .then((res) => res.json())
@@ -79,7 +79,7 @@ const MyCars = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:3000/cars/${editingCar._id}?email=${user?.email}`, {
+        const res = await fetch(`https://rentizo-server.vercel.app/cars/${editingCar._id}?email=${user?.email}`, {
           method: 'PATCH',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -119,7 +119,7 @@ const MyCars = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:3000/cars/${id}?email=${user?.email}`, {
+          const res = await fetch(`https://rentizo-server.vercel.app/cars/${id}?email=${user?.email}`, {
             method: 'DELETE',
             credentials: 'include',
           });

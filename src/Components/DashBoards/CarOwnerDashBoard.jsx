@@ -12,7 +12,6 @@ import { toast } from 'react-toastify';
 const CarOwnerDashboard = () => {
     const [activeTab, setActiveTab] = useState('myCars');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [showAddCarModal, setShowAddCarModal] = useState(false);
     const { user } = useContext(AuthContext);
 
     // State for dynamic data
@@ -44,7 +43,7 @@ const CarOwnerDashboard = () => {
             setLoading(true);
 
             // Fetch cars owned by this user
-            const carsResponse = await fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
+            const carsResponse = await fetch(`https://rentizo-server.vercel.app/cars/by-email?email=${user.email}`, {
                 credentials: 'include',
             });
 
@@ -64,70 +63,65 @@ const CarOwnerDashboard = () => {
                 }
 
                 setMyCars(sortedData.map(car => ({
+                    ...car,
                     id: car._id,
                     model: car.carModel || `${car.make} ${car.model} ${car.year}`,
                     image: car.image,
                     price: `$${car.pricePerDay}/day`,
                     status: car.availability || 'available',
                     rating: car.rating || 4.5,
-                    trips: car.bookingCount || 0,
-                    // Include all car data for editing
-                    ...car
+                    trips: car.bookingCount || 0
                 })));
-            }
 
-            // Fetch bookings for owner's cars
-            const allCarsResponse = await fetch(`http://localhost:3000/cars/by-email?email=${user.email}`, {
-                credentials: 'include',
-            });
-
-            if (allCarsResponse.ok) {
-                const ownerCars = await allCarsResponse.json();
-                const ownerCarIds = ownerCars.map(car => car._id);
-
-                // Fetch all bookings and filter for owner's cars
-                const bookingsResponse = await fetch(`http://localhost:3000/bookings`, {
+                // Fetch bookings for owner's cars using the new endpoint
+                const bookingsResponse = await fetch(`https://rentizo-server.vercel.app/bookings/owner?email=${user.email}`, {
                     credentials: 'include',
                 });
 
                 if (bookingsResponse.ok) {
-                    const allBookings = await bookingsResponse.json();
-                    const ownerBookings = allBookings.filter(booking =>
-                        ownerCarIds.includes(booking.carId)
-                    );
-
+                    const ownerBookings = await bookingsResponse.json();
+                    
                     setBookings(ownerBookings.map(booking => ({
                         id: booking._id,
-                        car: booking.carModel,
-                        image: booking.carImage,
+                        carId: booking.carId,
+                        car: booking.carModel || 'Car',
+                        image: booking.carImage || '/default-car.jpg',
                         user: booking.userName || 'Customer',
+                        userEmail: booking.userEmail,
                         dates: `${new Date(booking.startDate).toLocaleDateString()} - ${new Date(booking.endDate).toLocaleDateString()}`,
+                        startDate: booking.startDate,
+                        endDate: booking.endDate,
                         price: `$${booking.totalPrice || booking.pricePerDay * 5}`,
-                        status: booking.status || 'pending'
+                        totalPrice: booking.totalPrice,
+                        status: booking.status || 'pending',
+                        createdAt: booking.createdAt
                     })));
+                } else {
+                    console.log('No bookings found or access denied');
+                    setBookings([]);
                 }
+            } else {
+                console.error('Failed to fetch cars');
+                setMyCars([]);
             }
 
-            // Calculate earnings based on bookings
-            const earningsResponse = await fetch(`http://localhost:3000/payments`, {
+            // Calculate earnings based on payments
+            const earningsResponse = await fetch(`https://rentizo-server.vercel.app/payments?email=${user.email}`, {
                 credentials: 'include',
             });
 
             if (earningsResponse.ok) {
                 const paymentsData = await earningsResponse.json();
-                const ownerPayments = paymentsData.filter(payment =>
-                    payment.userEmail === user.email
-                );
-
-                const total = ownerPayments.reduce((sum, payment) => sum + parseInt(payment.amount), 0);
-                const pending = ownerPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + parseInt(p.amount), 0);
-                const completed = ownerPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseInt(p.amount), 0);
+                
+                const total = paymentsData.reduce((sum, payment) => sum + parseInt(payment.amount || 0), 0);
+                const pending = paymentsData.filter(p => p.status === 'pending').reduce((sum, p) => sum + parseInt(p.amount || 0), 0);
+                const completed = paymentsData.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseInt(p.amount || 0), 0);
 
                 setEarnings({
                     totalEarnings: `$${total}`,
                     pendingPayout: `$${pending}`,
                     completedPayouts: `$${completed}`,
-                    recentTransactions: ownerPayments.slice(0, 5).map(payment => ({
+                    recentTransactions: paymentsData.slice(0, 5).map(payment => ({
                         id: payment._id,
                         date: new Date(payment.createdAt).toLocaleDateString(),
                         amount: `$${payment.amount}`,
@@ -158,6 +152,7 @@ const CarOwnerDashboard = () => {
 
         } catch (error) {
             console.error('Error fetching car owner data:', error);
+            toast.error('Failed to load dashboard data');
         } finally {
             setLoading(false);
         }
@@ -195,7 +190,7 @@ const CarOwnerDashboard = () => {
 
         if (result.isConfirmed) {
             try {
-                const res = await fetch(`http://localhost:3000/cars/${editingCar._id}?email=${user?.email}`, {
+                const res = await fetch(`https://rentizo-server.vercel.app/cars/${editingCar._id}?email=${user?.email}`, {
                     method: 'PATCH',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -235,7 +230,7 @@ const CarOwnerDashboard = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`http://localhost:3000/cars/${id}?email=${user?.email}`, {
+                    const res = await fetch(`https://rentizo-server.vercel.app/cars/${id}?email=${user?.email}`, {
                         method: 'DELETE',
                         credentials: 'include',
                     });
@@ -250,27 +245,6 @@ const CarOwnerDashboard = () => {
                 }
             }
         });
-    };
-
-    const handleBookingAction = async (bookingId, action) => {
-        try {
-            const response = await fetch(`http://localhost:3000/bookings/${bookingId}?email=${user.email}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    status: action === 'accept' ? 'confirmed' : 'rejected'
-                })
-            });
-
-            if (response.ok) {
-                fetchCarOwnerData(); // Refresh bookings
-            }
-        } catch (error) {
-            console.error('Error updating booking:', error);
-        }
     };
 
     const tabs = [
@@ -352,9 +326,12 @@ const CarOwnerDashboard = () => {
                                     >
                                         <div className="relative h-48">
                                             <img
-                                                src={car.image}
+                                                src={car.image || '/default-car.jpg'}
                                                 alt={car.carModel}
                                                 className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.src = '/default-car.jpg';
+                                                }}
                                             />
                                             <div className="absolute top-3 right-3 flex gap-2">
                                                 <button
@@ -437,70 +414,68 @@ const CarOwnerDashboard = () => {
             case 'bookings':
                 return (
                     <div className="space-y-6">
-                        <h2 className="text-2xl font-bold">Bookings Received</h2>
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-bold">Bookings Received</h2>
+                            <span className="text-gray-400">
+                                {bookings.length} {bookings.length === 1 ? 'booking' : 'bookings'}
+                            </span>
+                        </div>
 
                         {bookings.length === 0 ? (
                             <div className="text-center py-12 bg-gray-900 rounded-xl">
-                                <p className="text-gray-400">No bookings yet</p>
+                                <BsCalendarCheck className="text-5xl mx-auto text-gray-600 mb-4" />
+                                <h3 className="text-xl font-bold mb-2">No Bookings Yet</h3>
+                                <p className="text-gray-400">You haven't received any bookings for your cars yet.</p>
                             </div>
                         ) : (
-                            bookings.map(booking => (
-                                <motion.div
-                                    key={booking.id}
-                                    whileHover={{ scale: 1.01 }}
-                                    className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden"
-                                >
-                                    <div className="flex flex-col md:flex-row">
-                                        <div className="md:w-1/3">
-                                            <img
-                                                src={booking.image}
-                                                alt={booking.car}
-                                                className="w-full h-48 object-cover"
-                                            />
-                                        </div>
-                                        <div className="p-6 md:w-2/3">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <h3 className="text-xl font-bold">{booking.car}</h3>
-                                                    <p className="text-gray-400">Booked by: {booking.user}</p>
-                                                </div>
-                                                <span className={`px-3 py-1 rounded-full text-xs ${booking.status === 'confirmed' ? 'bg-green-900 text-green-300' :
-                                                    booking.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
-                                                        'bg-red-900 text-red-300'
+                            <div className="space-y-4">
+                                {bookings.map(booking => (
+                                    <motion.div
+                                        key={booking.carId}
+                                        whileHover={{ scale: 1.01 }}
+                                        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 overflow-hidden"
+                                    >
+                                        <div className="flex flex-col md:flex-row">
+                                            <div className="p-6 w-full">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="text-xl font-bold">{booking.car}</h3>
+                                                        <p className="text-gray-400">Booked by: {booking.user}</p>
+                                                        <p className="text-gray-400 text-sm">{booking.userEmail}</p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                                        booking.status === 'confirmed' ? 'bg-green-900 text-green-300' :
+                                                        booking.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
+                                                        booking.status === 'rejected' ? 'bg-red-900 text-red-300' :
+                                                        'bg-gray-700 text-gray-300'
                                                     }`}>
-                                                    {booking.status}
-                                                </span>
+                                                        {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                    <div>
+                                                        <p className="text-gray-400 text-sm">Booking Dates</p>
+                                                        <p className="font-medium">{booking.dates}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-400 text-sm">Total Amount</p>
+                                                        <p className="text-primary font-bold">{booking.price}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-400 text-sm">Start Date</p>
+                                                        <p>{new Date(booking.startDate).toLocaleDateString()}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-400 text-sm">End Date</p>
+                                                        <p>{new Date(booking.endDate).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                                <div>
-                                                    <p className="text-gray-400 text-sm">Dates</p>
-                                                    <p>{booking.dates}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-400 text-sm">Total Earnings</p>
-                                                    <p className="text-primary">{booking.price}</p>
-                                                </div>
-                                            </div>
-                                            {booking.status === 'pending' && (
-                                                <div className="flex space-x-3 mt-4">
-                                                    <button
-                                                        onClick={() => handleBookingAction(booking.id, 'accept')}
-                                                        className="flex-1 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition flex items-center justify-center space-x-2"
-                                                    >
-                                                        <FaCheck /> <span>Accept</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleBookingAction(booking.id, 'reject')}
-                                                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center justify-center space-x-2"
-                                                    >
-                                                        <FaTimes /> <span>Reject</span>
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
-                                    </div>
-                                </motion.div>
-                            ))
+                                    </motion.div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 );
@@ -527,35 +502,41 @@ const CarOwnerDashboard = () => {
 
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
                             <h3 className="text-xl font-bold mb-4">Recent Transactions</h3>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-800">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Invoice</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-800">
-                                        {earnings.recentTransactions.map(transaction => (
-                                            <tr key={transaction.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap">{transaction.date}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-primary">{transaction.amount}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${transaction.status === 'paid' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                                                        }`}>
-                                                        {transaction.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <button className="text-primary hover:underline">Download</button>
-                                                </td>
+                            {earnings.recentTransactions.length === 0 ? (
+                                <p className="text-gray-400 text-center py-4">No transactions yet</p>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-800">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Invoice</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-800">
+                                            {earnings.recentTransactions.map(transaction => (
+                                                <tr key={transaction.id}>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{transaction.date}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-primary">{transaction.amount}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 py-1 rounded-full text-xs ${
+                                                            transaction.status === 'completed' ? 'bg-green-900 text-green-300' : 
+                                                            'bg-yellow-900 text-yellow-300'
+                                                        }`}>
+                                                            {transaction.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <button className="text-primary hover:underline">Download</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-800 p-6">
@@ -592,7 +573,9 @@ const CarOwnerDashboard = () => {
 
                         {reviews.length === 0 ? (
                             <div className="text-center py-12 bg-gray-900 rounded-xl">
-                                <p className="text-gray-400">No reviews yet</p>
+                                <FaStar className="text-5xl mx-auto text-gray-600 mb-4" />
+                                <h3 className="text-xl font-bold mb-2">No Reviews Yet</h3>
+                                <p className="text-gray-400">You haven't received any reviews from customers yet.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -843,7 +826,7 @@ const CarOwnerDashboard = () => {
                     </div>
                 </div>
 
-                {/* Edit Modal - Same as MyCars component */}
+                {/* Edit Modal */}
                 {isModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                         <motion.div

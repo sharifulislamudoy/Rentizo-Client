@@ -26,7 +26,7 @@ const CarDetails = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/bookings?email=${user.email}`, {
+      fetch(`https://rentizo-server.vercel.app/bookings?email=${user.email}`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -40,7 +40,7 @@ const CarDetails = () => {
   }, [user]);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/cars/${id}`)
+    fetch(`https://rentizo-server.vercel.app/cars/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCar(data);
@@ -181,7 +181,7 @@ const CarDetails = () => {
       };
 
       try {
-        const response = await fetch(`http://localhost:3000/bookings?email=${user?.email}`, {
+        const response = await fetch(`https://rentizo-server.vercel.app/bookings?email=${user?.email}`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -194,7 +194,7 @@ const CarDetails = () => {
 
         // 🔥 FIX: Increment booking count after successful booking
         try {
-          await fetch(`http://localhost:3000/cars/${car._id}/increment`, {
+          await fetch(`https://rentizo-server.vercel.app/cars/${car._id}/increment`, {
             method: 'PATCH',
             credentials: 'include'
           });
